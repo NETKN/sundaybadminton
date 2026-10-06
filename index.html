@@ -436,18 +436,24 @@ let hasCode=false,unlocked=!!ls.get('bd.ok'),code=ls.get('bd.code')||'',syncMode
 async function sb(path,opt){const r=await fetch(SB.url+path,Object.assign({headers:{apikey:SB.key,'Content-Type':'application/json'}},opt)),t=await r.text();let j=null;try{j=t?JSON.parse(t):null}catch(e){}
   if(!r.ok){const e=new Error((j&&j.message)||('http '+r.status));e.status=r.status;e.pg=j&&j.code;throw e}return j}
 const rpc=(fn,body)=>sb('/rpc/'+fn,{method:'POST',body:JSON.stringify(body||{})});
-function setSync(mode){syncMode=mode;const el=$('#sync');el.className='sync '+mode;el.querySelector('span').textContent={cloud:'บันทึกบนคลาวด์',view:'ดูอย่างเดียว · แตะเพื่อใส่รหัส',offline:'ออฟไลน์ · เก็บในเครื่องก่อน',err:'บันทึกไม่สำเร็จ ลองใหม่',wait:'กำลังเชื่อมต่อ…'}[mode]}
-function dbWrite(path,data){if(!db||!unlocked)return;queue[path]={data};if(!busy[path])flush(path)}
-async function flush(path){busy[path]=true;const i=path.indexOf('/'),tbl=path.slice(0,i),id=path.slice(i+1);
-  while(queue[path]){const {data}=queue[path];delete queue[path];
-    for(let attempt=0;attempt<2;attempt++){
-      try{await rpc('bd_put',{p_code:code,p_tbl:tbl,p_id:id,p_data:data});setSync('cloud');break}
-      catch(e){if(e.pg==='28P01'){unlocked=false;ls.set('bd.ok',0);setSync('view');toast('รหัสก๊วนถูกเปลี่ยน ใส่รหัสใหม่เพื่อบันทึกต่อ');break}
-        if(attempt===0){await new Promise(r=>setTimeout(r,600+Math.random()*600));continue}
-        setSync('err');break}
-    }}
-  busy[path]=false}
-function savePlayer(id){ls.set('bd.players',S.players);dbWrite('players/'+id,S.players[id])}
+function setSync(mode){syncMode=mode;const el=$('#sync');el.className='sync '+mode;el.querySelector('span').textContent={cloud:'บันทึกบนคลาวด์',offline:'ออฟไลน์ · เก็บในเครื่องก่อน',err:'บันทึกไม่สำเร็จ ลองใหม่',wait:'กำลังเชื่อมต่อ…'}[mode]}
+const jobs=[];let pumping=false;
+function enqueue(key,fn,body){if(!db)return;if(key){const i=jobs.findIndex(j=>j.key===key&&!j.active);if(i>=0){jobs[i]={key,fn,body};pump();return}}jobs.push({key,fn,body});pump()}
+async function pump(){if(pumping)return;pumping=true;
+  while(jobs.length){const j=jobs[0];j.active=true;let ok=false;
+    for(let a=0;a<2&&!ok;a++){try{await rpc(j.fn,j.body);ok=true}
+      catch(e){if(e.pg==='28P01'){unlocked=false;ls.set('bd.ok',0);toast('รหัสก๊วนถูกเปลี่ยน ใส่รหัสใหม่เพื่อแก้ไขข้อมูลเก่า');break}
+        if(a===0)await new Promise(r=>setTimeout(r,600+Math.random()*600))}}
+    jobs.shift();setSync(ok?'cloud':'err')}
+  pumping=false}
+/* everyone: add a player, change a photo, run the round, add a finished match. club code only: overwrite or delete stored documents */
+function dbWrite(path,data,op){const i=path.indexOf('/'),tbl=path.slice(0,i),id=path.slice(i+1);
+  if(tbl==='app')return enqueue(path,'bd_put_session',{p_data:data});
+  if(op==='addMatch')return enqueue(null,'bd_add_match',{p_day:id,p_match:data});
+  if(unlocked)return enqueue(path,'bd_put',{p_code:code,p_tbl:tbl,p_id:id,p_data:data});
+  if(op==='addPlayer')return enqueue(null,'bd_add_player',{p_id:id,p_data:data});
+  if(op==='photo')return enqueue(path+'#photo','bd_set_photo',{p_id:id,p_photo:data.photo||''})}
+function savePlayer(id,op){ls.set('bd.players',S.players);dbWrite('players/'+id,S.players[id],op)}
 function saveSession(){ls.set('bd.session',S.session);dbWrite('app/session',{s:S.session})}
 function saveDay(k){ls.set('bd.days',S.days);dbWrite('days/'+k,S.days[k])}
 function loadLocal(){S.players=ls.get('bd.players')||{};S.session=ls.get('bd.session');S.days=ls.get('bd.days')||{};
@@ -459,21 +465,19 @@ async function connect(){
     unlocked=!hasCode?true:(code?!!(await rpc('bd_check',{p_code:code})):false);ls.set('bd.ok',unlocked&&hasCode?1:0);
     const remoteP={},remoteD={};let ss;
     rows.forEach(r=>{if(r.tbl==='players')remoteP[r.id]=r.data;else if(r.tbl==='days')remoteD[r.id]={matches:Array.isArray(r.data.matches)?r.data.matches:[],gone:r.data.gone||[]};else if(r.tbl==='app'&&r.id==='session')ss=r.data});
-    if(unlocked){
-      for(const id in S.players)if(!remoteP[id]){remoteP[id]=S.players[id];dbWrite('players/'+id,S.players[id])}
-      for(const k in S.days){const loc=S.days[k].matches||[];if(!remoteD[k]){remoteD[k]={matches:loc,gone:S.days[k].gone||[]};if(loc.length)dbWrite('days/'+k,remoteD[k]);continue}
-        const have=new Set(remoteD[k].matches.map(m=>m.id));const extra=loc.filter(m=>!have.has(m.id)&&!(remoteD[k].gone||[]).includes(m.id));
-        if(extra.length){remoteD[k].matches=remoteD[k].matches.concat(extra).sort((a,b)=>a.t-b.t);dbWrite('days/'+k,remoteD[k])}}
-    }
+    for(const id in S.players)if(!remoteP[id]&&!S.players[id].hidden){remoteP[id]=S.players[id];dbWrite('players/'+id,S.players[id],'addPlayer')}
+    for(const k in S.days){const loc=S.days[k].matches||[];if(!remoteD[k])remoteD[k]={matches:[],gone:[]};
+      const have=new Set(remoteD[k].matches.map(m=>m.id));const extra=loc.filter(m=>!have.has(m.id)&&!(remoteD[k].gone||[]).includes(m.id));
+      if(extra.length){remoteD[k].matches=remoteD[k].matches.concat(extra).sort((a,b)=>a.t-b.t);extra.forEach(m=>dbWrite('days/'+k,m,'addMatch'))}}
     S.players=remoteP;S.days=remoteD;
-    if(ss!==undefined){S.session=ss.s||null}else if(S.session&&unlocked){dbWrite('app/session',{s:S.session})}
+    if(ss!==undefined){S.session=ss.s||null}else if(S.session){dbWrite('app/session',{s:S.session})}
     ls.set('bd.players',S.players);ls.set('bd.days',S.days);ls.set('bd.session',S.session);
-    setSync(unlocked?'cloud':'view');
+    setSync('cloud');
     if(!sheet){if(view==='home'||!S.session&&['draw','setup','play'].includes(view))view='home';render()}
   }catch(e){db=false;setSync('offline')}
 }
 window.addEventListener('online',()=>{if(!db)connect()});
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!sheet&&(!db||!unlocked))connect()});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!sheet&&!db)connect()});
 
 /* ---------- helpers ---------- */
 const P=id=>S.players[id];
@@ -520,7 +524,7 @@ function vHome(){
   const go=s?'<button class="btn pri block" data-a="resume">กลับเข้า round นี้</button><button class="btn danger block" data-a="endRound" data-confirm="1">'+endLabel()+'</button>':'<button class="btn pri block" data-a="go" data-v="pick">เริ่มจับฉลาก</button>';
   const sumB='<button class="btn grow" data-a="openSummary">สรุปผลวันนี้</button>',plB='<button class="btn grow" data-a="go" data-v="players">ผู้เล่น ('+activePlayers().length+')</button>';
   const rsB='<button class="btn sm mini" data-a="openReset">ตั้งค่า · รีเซ็ตข้อมูล</button>';
-  const lockB=db&&!hasCode?'<button class="btn sm danger" data-a="setCode">ยังไม่ได้ตั้งรหัสก๊วน · ตั้งเลย</button>':(db&&!unlocked?'<button class="btn sm" data-a="openCode">ใส่รหัสก๊วนเพื่อบันทึกผล</button>':'');
+  const lockB=db&&!hasCode?'<button class="btn sm danger" data-a="setCode">ยังไม่ได้ตั้งรหัสก๊วน · ตั้งเลย</button>':(db&&!unlocked?'<button class="btn sm mini" data-a="openCode">ใส่รหัสก๊วน (ผู้ดูแล)</button>':'');
   const bdB='<button class="btn block board" data-a="go" data-v="board">SCOREBOARD</button>';
   if(LAND)return {title:'',main:hero,acts:go+'<div class="tabs">'+sumB+plB+'</div>'+bdB+lockB+rsB};
   return {main:hero+(s?'<section class="panel stack"><div class="label">Round ที่เปิดอยู่</div><h2>'+status+'</h2>'+go+'</section>':go)+'<div class="row">'+sumB+plB+'</div>'+
@@ -712,7 +716,7 @@ function vReset(){const keys=Object.keys(S.days).filter(k=>S.days[k].matches.len
       acts:'<div class="tabs3">'+'<button class="btn sm" data-a="setCode">'+(hasCode?'เปลี่ยนรหัสก๊วน':'ตั้งรหัสก๊วน')+'</button><button class="btn sm" data-a="exportData">สำรองข้อมูล</button><label class="btn sm">นำเข้าข้อมูล<input type="file" accept="application/json,.json" data-change="import" id="impFile" style="position:absolute;opacity:0;width:1px;height:1px"></label>'+'</div>'+(pages>1?'<div class="pager"><button class="btn" data-a="rPg" data-d="-1"'+(rPage<=0?' disabled':'')+' aria-label="หน้าก่อน">‹</button><span class="num">'+(rPage+1)+'/'+pages+'</span><button class="btn" data-a="rPg" data-d="1"'+(rPage>=pages-1?' disabled':'')+' aria-label="หน้าถัดไป">›</button></div>':'')+allB}}
   return {main:'<h1>รีเซ็ตข้อมูล</h1><p class="small muted">'+note+'</p>'+sel+(rounds.length?rounds.map(r=>'<section class="panel stack"><div class="row"><h2 class="grow">Round '+r.no+' · '+r.ms.length+' match</h2>'+rB(r)+'</div>'+
       r.ms.map(m=>'<div class="mrow"><div class="grow"><div class="small muted">สนาม '+m.court+' · '+mTime(m)+' · '+clock(m.dur)+'</div><div>'+mLine(m)+'</div></div>'+mB(m)+'</div>').join('')+'</section>').join(''):none)+
-    '<section class="panel stack"><h2>รหัสก๊วนและข้อมูลสำรอง</h2><p class="small muted">'+(hasCode?'ตั้งรหัสก๊วนแล้ว เครื่องที่ไม่มีรหัสดูได้อย่างเดียว':'ยังไม่ได้ตั้งรหัสก๊วน ตอนนี้ใครมีลิงก์ก็แก้ไขได้')+'</p><div class="row">'+'<button class="btn sm" data-a="setCode">'+(hasCode?'เปลี่ยนรหัสก๊วน':'ตั้งรหัสก๊วน')+'</button><button class="btn sm" data-a="exportData">สำรองข้อมูล</button><label class="btn sm">นำเข้าข้อมูล<input type="file" accept="application/json,.json" data-change="import" id="impFile" style="position:absolute;opacity:0;width:1px;height:1px"></label>'+'</div></section>'+
+    '<section class="panel stack"><h2>รหัสก๊วนและข้อมูลสำรอง</h2><p class="small muted">'+(hasCode?'ตั้งรหัสก๊วนแล้ว การลบหรือแก้ไขข้อมูลเก่าและ profile ผู้เล่นต้องใช้รหัส':'ยังไม่ได้ตั้งรหัสก๊วน ตอนนี้ใครมีลิงก์ก็ลบและแก้ไขข้อมูลได้ทั้งหมด')+'</p><div class="row">'+'<button class="btn sm" data-a="setCode">'+(hasCode?'เปลี่ยนรหัสก๊วน':'ตั้งรหัสก๊วน')+'</button><button class="btn sm" data-a="exportData">สำรองข้อมูล</button><label class="btn sm">นำเข้าข้อมูล<input type="file" accept="application/json,.json" data-change="import" id="impFile" style="position:absolute;opacity:0;width:1px;height:1px"></label>'+'</div></section>'+
     '<section class="panel stack"><h2>ลบทั้งหมด</h2><p class="small muted">ลบผลการแข่งทุกวัน ทุก round และ round ที่เปิดค้างอยู่</p>'+allB+'</section>'}}
 
 /* ---------- sheets ---------- */
@@ -725,10 +729,10 @@ function sh(title,content,actions){const x='<button class="btn sm" data-a="close
   return '<div class="shead"><h2>'+title+'</h2>'+x+'</div>'+content+actions}
 function shPlayer(){const d=draft,slot=(k,l)=>'<label class="slot">'+(d[k]?'<img class="av lg" src="'+esc(d[k])+'" alt="">':'<span class="av lg" style="background:var(--line);color:var(--muted)">+</span>')+'<span>'+l+'</span><input type="file" accept="image/*" data-change="photo" data-k="'+k+'" id="ph_'+k+'"></label>';
   return sh(d.isNew?'เพิ่มผู้เล่น':'แก้ไขผู้เล่น',
-    '<div class="field"><label class="label" for="pName">ชื่อ</label><input type="text" id="pName" maxlength="24" value="'+esc(d.name)+'" data-input="pName" autocomplete="off"></div>'+
+    '<div class="field"><label class="label" for="pName">ชื่อ</label><input type="text" id="pName" maxlength="24" value="'+esc(d.name)+'" data-input="pName" autocomplete="off"'+(unlocked||d.isNew?'':' readonly')+'></div>'+
     '<div class="stack"><div class="label">รูป profile (ไม่ใส่ก็ได้)</div><div class="slots one">'+slot('photo',d.photo?'แตะเพื่อเปลี่ยนรูป':'แตะเพื่อเลือกรูป')+'</div></div>',
     '<button class="btn pri block" data-a="savePlayer">บันทึก</button>'+
-    (d.isNew?'':'<button class="btn danger block" data-a="delPlayer" data-confirm="1">ลบผู้เล่นคนนี้</button>'))}
+    (d.isNew?'':(unlocked?'<button class="btn danger block" data-a="delPlayer" data-confirm="1">ลบผู้เล่นคนนี้</button>':'<p class="small muted">เปลี่ยนรูปได้เลย ส่วนการแก้ชื่อหรือลบผู้เล่นต้องใช้รหัสก๊วน</p>')))}
 function shFinish(){const c=ses().courts[fin.c],[a,b]=c.teams.map(team);
   const box=(t,k)=>'<div class="sbox" id="box_'+k+'">'+duo(t.m,'photo','')+'<span class="nm">'+esc(names(t.m))+'</span>'+
     '<input type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="99" id="sc_'+k+'" value="'+fin[k]+'" data-input="score" data-k="'+k+'" aria-label="คะแนน '+esc(names(t.m))+'">'+
@@ -787,7 +791,7 @@ function shPair(){const s=ses(),q=idleTeams().filter(t=>!pr.slots.includes(t.id)
 let codeMode='enter',codeErr='';
 function shCode(){const set=codeMode==='set';
   return sh(set?(hasCode?'เปลี่ยนรหัสก๊วน':'ตั้งรหัสก๊วน'):'ใส่รหัสก๊วน',
-    '<p class="small muted">'+(set?'รหัสนี้ใช้ปลดล็อกการบันทึกและแก้ไขในแต่ละเครื่อง ตั้งอย่างน้อย 4 ตัว แล้วบอกเฉพาะคนที่ให้บันทึกผลได้':'ต้องใส่รหัสก๊วนก่อนจึงจะบันทึกหรือแก้ไขได้ ใส่ครั้งเดียว เครื่องนี้จะจำไว้ คนที่ไม่มีรหัสยังเปิดดูผลได้')+'</p>'+
+    '<p class="small muted">'+(set?'รหัสนี้ใช้ปลดล็อกการแก้ไขและลบข้อมูลเก่าในแต่ละเครื่อง ตั้งอย่างน้อย 4 ตัว แล้วบอกเฉพาะคนที่ดูแลข้อมูล':'รหัสก๊วนใช้สำหรับแก้ไขหรือลบผลที่จบไปแล้ว และแก้ไขหรือลบ profile ผู้เล่น ใส่ครั้งเดียว เครื่องนี้จะจำไว้ ส่วนการเพิ่มผู้เล่น เปลี่ยนรูป และบันทึกผลแข่ง ทำได้โดยไม่ต้องใช้รหัส')+'</p>'+
     '<div class="field"><label class="label" for="codeIn">'+(set?'รหัสใหม่':'รหัสก๊วน')+'</label><input type="text" id="codeIn" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false"></div>'+
     (codeErr?'<div class="small" style="color:var(--lose)">'+esc(codeErr)+'</div>':''),
     '<button class="btn pri block" data-a="submitCode">'+(set?'บันทึกรหัส':'ปลดล็อก')+'</button>')}
@@ -824,8 +828,8 @@ const A={
   closeSheet,
   editPlayer(d){const p=P(d.id);draft=p?{id:p.id,name:p.name,photo:p.photo||'',win:p.win||'',lose:p.lose||''}:{id:'p'+uid(),name:'',photo:'',win:'',lose:'',isNew:true};openSheet('player')},
   savePlayer(){const n=draft.name.trim();if(!n){toast('ใส่ชื่อก่อนบันทึก');return}
-    const old=P(draft.id)||{order:Date.now()};S.players[draft.id]=Object.assign({},old,{id:draft.id,name:n,photo:draft.photo,win:'',lose:'',hidden:false});
-    savePlayer(draft.id);if(draft.isNew&&view==='pick')pickSel.add(draft.id);toast('บันทึกแล้ว');closeSheet()},
+    const old=P(draft.id)||{order:Date.now()};S.players[draft.id]=Object.assign({},old,{id:draft.id,name:(unlocked||draft.isNew)?n:(old.name||n),photo:draft.photo,win:'',lose:'',hidden:false});
+    savePlayer(draft.id,draft.isNew?'addPlayer':'photo');if(draft.isNew&&view==='pick')pickSel.add(draft.id);toast('บันทึกแล้ว');closeSheet()},
   delPlayer(){const s=ses();if(s&&s.ids.includes(draft.id)){toast('คนนี้อยู่ใน round ที่เปิดอยู่ จบ round ก่อนแล้วค่อยลบ');return}
     S.players[draft.id].hidden=true;savePlayer(draft.id);pickSel.delete(draft.id);toast('ลบแล้ว');closeSheet()},
   togglePick(d){pickSel.has(d.id)?pickSel.delete(d.id):pickSel.add(d.id);ls.set('bd.lastPick',[...pickSel]);render()},
@@ -855,7 +859,7 @@ const A={
   set21(d){fin[d.k]=21;$('#sc_'+d.k).value=21;refreshFin()},
   saveFinish(){if(fin.sa===fin.sb)return;const s=ses(),c=s.courts[fin.c],[ta,tb]=c.teams.map(team),now=Date.now();
     ensureRound(s);const m={id:'m'+uid(),r:s.rid,rn:s.no,t:now,court:fin.c+1,a:[...ta.m],b:[...tb.m],sa:fin.sa,sb:fin.sb,w:fin.sa>fin.sb?'a':'b',dur:now-c.start};
-    const k=dayKey();(S.days[k]||(S.days[k]={matches:[]})).matches.push(m);saveDay(k);
+    const k=dayKey();(S.days[k]||(S.days[k]={matches:[]})).matches.push(m);ls.set('bd.days',S.days);dbWrite('days/'+k,m,'addMatch');
     ta.last=tb.last=now;c.teams=null;c.start=null;const wT=m.w==='a'?ta:tb,lT=m.w==='a'?tb:ta;wT.streak=(wT.streak||0)+1;lT.streak=0;
     if(s.courts.length>1){c.res={w:wT.id,l:lT.id,sa:m.sa,sb:m.sb};fin=null;saveSession();
       if(s.courts.some(x=>x.teams)){sheet=null;toast('บันทึกผลสนาม '+m.court+' แล้ว รอสนามอื่นแข่งจบ');render()}else{pr=buildPair();sheet='pair';render()}
@@ -888,12 +892,12 @@ const A={
   bPg(d){bPage+=+d.d;render()},
   openCode(){codeMode='enter';codeErr='';openSheet('code')},
   setCode(){codeMode='set';codeErr='';openSheet('code')},
-  syncTap(){if(syncMode==='view')A.openCode();else if(syncMode==='offline'||syncMode==='err'){setSync('wait');connect()}},
+  syncTap(){if(syncMode==='offline'||syncMode==='err'){setSync('wait');connect()}},
   async submitCode(){const v=($('#codeIn').value||'').trim();if(!db){codeErr='ตอนนี้ออฟไลน์อยู่ ต่ออินเทอร์เน็ตแล้วลองใหม่';renderSheet();return}
     try{if(codeMode==='set'){if(v.length<4){codeErr='ตั้งรหัสอย่างน้อย 4 ตัว';renderSheet();return}
         await rpc('bd_set_code',{p_old:code,p_new:v});code=v;hasCode=true;unlocked=true;ls.set('bd.code',v);ls.set('bd.ok',1);setSync('cloud');toast('ตั้งรหัสก๊วนแล้ว');closeSheet()}
       else{const ok=await rpc('bd_check',{p_code:v});if(!ok){codeErr='รหัสไม่ถูกต้อง';renderSheet();return}
-        code=v;unlocked=true;ls.set('bd.code',v);ls.set('bd.ok',1);setSync('cloud');toast('ปลดล็อกแล้ว เครื่องนี้บันทึกผลได้');closeSheet()}}
+        code=v;unlocked=true;ls.set('bd.code',v);ls.set('bd.ok',1);setSync('cloud');toast('ปลดล็อกแล้ว เครื่องนี้แก้ไขและลบข้อมูลได้');closeSheet()}}
     catch(e){codeErr=e.pg==='28P01'?'รหัสเดิมในเครื่องนี้ไม่ถูกต้อง ปิดแล้วใส่รหัสก๊วนก่อน':'ทำรายการไม่สำเร็จ ลองใหม่';renderSheet()}},
   exportData(){const blob=new Blob([JSON.stringify({app:'sundaybadminton',exported:new Date().toISOString(),players:S.players,days:S.days})],{type:'application/json'}),a=document.createElement('a');
     a.href=URL.createObjectURL(blob);a.download='sundaybadminton-backup-'+dayKey()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('บันทึกไฟล์สำรองแล้ว')},
@@ -905,11 +909,11 @@ const A={
     if(S.session){S.session=null;saveSession()}toast('ลบข้อมูลการแข่งทั้งหมดแล้ว');render()}
 };
 const armed=new WeakMap();
-const RO=new Set(['go','resume','openSummary','openProfile','back','sumTab','sumPg','bPg','rPg','closeSheet','openReset','openCode','submitCode','syncTap','exportData']);
+const ADMIN=new Set(['delMatch','delRound','wipeAll','delPlayer','setCode']);
 document.addEventListener('click',e=>{
   if(e.target.id==='veil'){closeSheet();return}
   const el=e.target.closest('[data-a]');if(!el||el.disabled)return;
-  if(!unlocked&&!RO.has(el.dataset.a)){e.preventDefault();codeMode='enter';codeErr='';openSheet('code');return}
+  if(!unlocked&&ADMIN.has(el.dataset.a)){e.preventDefault();codeMode='enter';codeErr='';openSheet('code');return}
   if(el.dataset.confirm&&!armed.has(el)){armed.set(el,el.innerHTML);const c=el.dataset.confirm;el.textContent=c==='1'?'แตะอีกครั้งเพื่อยืนยัน':c;el.classList.add('armed');
     setTimeout(()=>{if(armed.has(el)){el.innerHTML=armed.get(el);armed.delete(el);el.classList.remove('armed')}},3000);return}
   armed.delete(el);
