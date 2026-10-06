@@ -105,10 +105,8 @@ h1{font-size:28px;font-weight:700} h2{font-size:20px;font-weight:600} h3{font-si
 .tk.up.wait b{font-size:26px;letter-spacing:.04em}
 .tk.up .who{position:absolute;bottom:8px;left:0;right:0;font-size:14px;font-weight:600;text-align:center;padding:0 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tk.up .av{position:absolute;top:6px;left:6px;width:32px;height:32px;font-size:11px;border-width:1px}
-.tgrid.shake .tk.down{animation:shake .45s ease-in-out}
 @keyframes flip{from{transform:rotateY(90deg)}to{transform:none}}
-@keyframes shake{0%,100%{transform:none}25%{transform:translate(-4px,2px) rotate(-5deg)}60%{transform:translate(4px,-2px) rotate(5deg)}}
-@media (prefers-reduced-motion:reduce){.tk.up.new,.tgrid.shake .tk.down{animation:none}}
+@media (prefers-reduced-motion:reduce){.tk.up.new{animation:none}}
 
 /* team rows */
 .team{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface);width:100%;text-align:left;min-width:0}
@@ -822,6 +820,7 @@ function shrink(file){return new Promise((res,rej)=>{const r=new FileReader();r.
   c.getContext('2d').drawImage(im,x,y,s,s,0,0,S2,S2);res(c.toDataURL('image/jpeg',.82))};im.src=r.result};r.readAsDataURL(file)})}
 
 /* ---------- actions ---------- */
+let shufBusy=false;
 const A={
   go(d){view=d.v;roundDone=null;render();scrollTo(0,0)},
   resume(){view=ses().stage;render()},
@@ -844,9 +843,20 @@ const A={
     S.session={rid:'r'+uid(),no:nextRoundNo(),stage:'draw',ids,tickets:shuffle(ticketLabels(ids.length)).map(l=>({l,by:null})),drawer:null,teams:[],bench:[],courts:[],nCourts:1};
     saveSession();view='draw';render();scrollTo(0,0)},
   setDrawer(d){ses().drawer=d.id;render()},
-  reshuffle(){const s=ses(),idx=[],labs=[];s.tickets.forEach((t,i)=>{if(!t.by){idx.push(i);labs.push(t.l)}});shuffle(labs);idx.forEach((i,j)=>{s.tickets[i].l=labs[j]});
-    saveSession();render();const g=$('#tgrid');if(g){g.classList.add('shake');setTimeout(()=>g.classList.remove('shake'),500)}toast('คละฉลากใหม่แล้ว')},
-  drawTicket(d){const s=ses();if(!s.drawer){toast('เลือกคนจับก่อน แล้วค่อยแตะฉลาก');return}
+  reshuffle(){if(shufBusy)return;const s=ses(),idx=[],labs=[];s.tickets.forEach((t,i)=>{if(!t.by){idx.push(i);labs.push(t.l)}});
+    const mix=()=>{shuffle(labs);idx.forEach((i,j)=>{s.tickets[i].l=labs[j]});saveSession();render()};
+    const g=$('#tgrid'),offs=()=>{const gr=g0().getBoundingClientRect(),cx=gr.left+gr.width/2,cy=gr.top+gr.height/2;
+      return [...g0().querySelectorAll('.tk.down')].map((el,k,all)=>{const r=el.getBoundingClientRect(),m=(all.length-1)/2;
+        return {el,x:cx-(r.left+r.width/2)+(k-m)*1.5,y:cy-(r.top+r.height/2)-(k-m)*1.2,rot:((k*37)%25)-12}})},g0=()=>$('#tgrid');
+    if(!g||!g.animate||idx.length<2){mix();toast('คละฉลากใหม่แล้ว');return}
+    shufBusy=true;const pile=o=>`translate(${o.x}px,${o.y}px) rotate(${o.rot}deg) scale(.92)`;
+    offs().forEach((o,k)=>{o.el.style.zIndex=5+k;o.el.animate([{transform:'none'},{transform:pile(o)}],{duration:380,easing:'cubic-bezier(.5,0,.3,1)',fill:'forwards'})
+      .finished.then(()=>o.el.animate([{transform:pile(o)},{transform:pile({x:o.x+(k%2?9:-9),y:o.y,rot:-o.rot})},{transform:pile(o)}],{duration:260,easing:'ease-in-out',fill:'forwards'})).catch(()=>{})});
+    setTimeout(()=>{mix();const list=offs();let left=list.length;const done=()=>{if(--left<=0){shufBusy=false}};
+      list.forEach((o,k)=>{o.el.style.zIndex=5+k;const an=o.el.animate([{transform:pile(o)},{transform:'none'}],{duration:420,delay:k*35,easing:'cubic-bezier(.2,.8,.3,1)',fill:'backwards'});
+        an.finished.then(()=>{o.el.style.zIndex='';done()}).catch(done)});
+      setTimeout(()=>{shufBusy=false},420+list.length*35+200);toast('คละฉลากใหม่แล้ว')},660)},
+  drawTicket(d){if(shufBusy)return;const s=ses();if(!s.drawer){toast('เลือกคนจับก่อน แล้วค่อยแตะฉลาก');return}
     const t=s.tickets[+d.i];if(!t||t.by)return;t.by=s.drawer;s.drawer=null;justDrawn=+d.i;setTimeout(()=>{justDrawn=-1},400);
     if(s.tickets.every(x=>x.by)){const k=Math.floor(s.ids.length/2);s.teams=[];
       for(let n=1;n<=k;n++)s.teams.push({id:'t'+n,no:n,m:s.tickets.filter(x=>x.l===n).map(x=>x.by)});
@@ -948,7 +958,7 @@ loadLocal();setSync('wait');render();connect();
 </script>
 <script>
 /* pick up a newer deploy even when the phone has an older copy cached */
-(function(){var B='1791276418';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
+(function(){var B='1791277898';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
 </script>
 </body>
 </html>
