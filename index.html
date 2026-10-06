@@ -261,8 +261,8 @@ table.tight .plink{gap:6px}
 .wl .n{font-family:var(--f-display);font-weight:700;font-size:44px;line-height:1.05;font-variant-numeric:tabular-nums}
 .wl .w .n{color:var(--win)} .wl .l .n{color:var(--lose)}
 .pstat{display:flex;flex-direction:column;gap:8px;min-width:0}
-.sync.cloud i{box-shadow:0 0 6px 2px var(--win);animation:pulse 1.6s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 8px 3px var(--win)}50%{opacity:.35;box-shadow:0 0 2px 0 var(--win)}}
+.sync.cloud i{background:#74f93b;box-shadow:0 0 6px 2px #74f93b;animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 8px 3px #74f93b}50%{opacity:.35;box-shadow:0 0 2px 0 #74f93b}}
 .foot{gap:8px;flex-wrap:nowrap}
 .foot .btn{white-space:nowrap;min-width:0}
 .tabs .btn.mini{min-height:32px;font-size:12px;padding:2px 4px}
@@ -958,7 +958,7 @@ loadLocal();setSync('wait');render();connect();
 </script>
 <script>
 /* pick up a newer deploy even when the phone has an older copy cached */
-(function(){var B='1791277898';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
+(function(){var B='1791278954';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
 </script>
 </body>
 </html>
