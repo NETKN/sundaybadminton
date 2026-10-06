@@ -263,6 +263,8 @@ table.tight .plink{gap:6px}
 .wl .n{font-family:var(--f-display);font-weight:700;font-size:44px;line-height:1.05;font-variant-numeric:tabular-nums}
 .wl .w .n{color:var(--win)} .wl .l .n{color:var(--lose)}
 .pstat{display:flex;flex-direction:column;gap:8px;min-width:0}
+.foot{gap:8px;flex-wrap:wrap}
+.tabs .btn.mini{min-height:32px;font-size:12px;padding:2px 4px}
 .tabs3{display:grid;grid-template-columns:1fr;gap:4px}
 .tabs3 .btn{min-height:32px;font-size:12px;padding:2px 4px}
 label.btn{cursor:pointer;position:relative}
@@ -524,11 +526,11 @@ function vHome(){
   const go=s?'<button class="btn pri block" data-a="resume">กลับเข้า round นี้</button><button class="btn danger block" data-a="endRound" data-confirm="1">'+endLabel()+'</button>':'<button class="btn pri block" data-a="go" data-v="pick">เริ่มจับฉลาก</button>';
   const sumB='<button class="btn grow" data-a="openSummary">สรุปผลวันนี้</button>',plB='<button class="btn grow" data-a="go" data-v="players">ผู้เล่น ('+activePlayers().length+')</button>';
   const rsB='<button class="btn sm mini" data-a="openReset">ตั้งค่า · รีเซ็ตข้อมูล</button>';
-  const lockB=db&&!hasCode?'<button class="btn sm danger" data-a="setCode">ยังไม่ได้ตั้งรหัสก๊วน · ตั้งเลย</button>':(db&&!unlocked?'<button class="btn sm mini" data-a="openCode">ใส่รหัสก๊วน (ผู้ดูแล)</button>':'');
+  const lockB=db&&!hasCode?'<button class="btn sm danger" data-a="setCode">ยังไม่ได้ตั้งรหัสก๊วน · ตั้งเลย</button>':(db&&!unlocked?'<button class="btn sm mini" data-a="openCode">ใส่รหัสก๊วน</button>':'');
   const bdB='<button class="btn block board" data-a="go" data-v="board">SCOREBOARD</button>';
-  if(LAND)return {title:'',main:hero,acts:go+'<div class="tabs">'+sumB+plB+'</div>'+bdB+lockB+rsB};
+  if(LAND)return {title:'',main:hero,acts:go+'<div class="tabs">'+sumB+plB+'</div>'+bdB+(lockB?'<div class="tabs">'+lockB+rsB+'</div>':rsB)};
   return {main:hero+(s?'<section class="panel stack"><div class="label">Round ที่เปิดอยู่</div><h2>'+status+'</h2>'+go+'</section>':go)+'<div class="row">'+sumB+plB+'</div>'+
-    bdB+(lockB?'<div class="row" style="justify-content:center">'+lockB+'</div>':'')+'<div class="foot">'+rsB+'</div>'}}
+    bdB+'<div class="foot">'+lockB+rsB+'</div>'}}
 function pcell(p,extra,act){return '<button class="pcell '+(extra||'')+'" data-a="'+act+'" data-id="'+esc(p.id)+'">'+av(p.id)+'<span class="nm">'+esc(p.name)+'</span></button>'}
 const addCell='<button class="pcell add" data-a="editPlayer" data-id="">+ เพิ่มผู้เล่น</button>';
 const pgrid=cells=>LAND?'<div class="fit cells" data-fit="1.1">'+cells+'</div>':'<div class="pgrid">'+cells+'</div>';
@@ -791,7 +793,7 @@ function shPair(){const s=ses(),q=idleTeams().filter(t=>!pr.slots.includes(t.id)
 let codeMode='enter',codeErr='';
 function shCode(){const set=codeMode==='set';
   return sh(set?(hasCode?'เปลี่ยนรหัสก๊วน':'ตั้งรหัสก๊วน'):'ใส่รหัสก๊วน',
-    '<p class="small muted">'+(set?'รหัสนี้ใช้ปลดล็อกการแก้ไขและลบข้อมูลเก่าในแต่ละเครื่อง ตั้งอย่างน้อย 4 ตัว แล้วบอกเฉพาะคนที่ดูแลข้อมูล':'รหัสก๊วนใช้สำหรับแก้ไขหรือลบผลที่จบไปแล้ว และแก้ไขหรือลบ profile ผู้เล่น ใส่ครั้งเดียว เครื่องนี้จะจำไว้ ส่วนการเพิ่มผู้เล่น เปลี่ยนรูป และบันทึกผลแข่ง ทำได้โดยไม่ต้องใช้รหัส')+'</p>'+
+    '<p class="small muted">'+(set?'รหัสนี้ใช้ปลดล็อกการแก้ไขและลบข้อมูลเก่าในแต่ละเครื่อง ตั้งอย่างน้อย 4 ตัว แล้วบอกเฉพาะคนที่ดูแลข้อมูล':'แก้ไขหรือลบข้อมูลจำเป็นต้องกรอกรหัสก่อน (ใส่แค่ครั้งเดียว)')+'</p>'+
     '<div class="field"><label class="label" for="codeIn">'+(set?'รหัสใหม่':'รหัสก๊วน')+'</label><input type="text" id="codeIn" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false"></div>'+
     (codeErr?'<div class="small" style="color:var(--lose)">'+esc(codeErr)+'</div>':''),
     '<button class="btn pri block" data-a="submitCode">'+(set?'บันทึกรหัส':'ปลดล็อก')+'</button>')}
