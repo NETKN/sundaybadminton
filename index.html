@@ -695,7 +695,7 @@ function vSummary(){const keys=Object.keys(S.days).filter(k=>S.days[k].matches.l
     st.pairs.map(x=>'<tr><td>'+esc(names(x.ids))+'</td><td>'+x.g+'</td><td>'+x.w+'</td><td>'+diff(x)+'</td></tr>').join('')+'</tbody></table></div></div>';
   h+='<div class="stack"><h2>match ทั้งหมด ('+st.ms.length+')</h2>'+st.ms.slice().reverse().map(m=>
     '<div class="panel stack"><div class="row small muted"><span class="grow">Round '+(m.rn||1)+' · สนาม '+m.court+' · '+mTime(m)+' · '+clock(m.dur)+'</span><button class="btn sm danger" data-a="delMatch" data-id="'+esc(m.id)+'" data-confirm="1">ลบ</button></div>'+
-    '<div class="row"><span class="grow" style="'+(m.w==='a'?'font-weight:600':'')+'">'+esc(names(m.a))+'</span><span class="num" style="font-weight:700">'+m.sa+' – '+m.sb+'</span><span class="grow" style="text-align:right;'+(m.w==='b'?'font-weight:600':'')+'">'+esc(names(m.b))+'</span></div></div>').join('')+'</div>';
+    '<div class="row"><span class="grow" style="'+(m.w==='a'?'font-weight:600;color:var(--win)':'')+'">'+esc(names(m.a))+'</span><span class="num" style="font-weight:700">'+m.sa+' – '+m.sb+'</span><span class="grow" style="text-align:right;'+(m.w==='b'?'font-weight:600;color:var(--win)':'')+'">'+esc(names(m.b))+'</span></div></div>').join('')+'</div>';
   return {main:h}}
 
 /* ---------- reset ---------- */
@@ -900,7 +900,7 @@ const A={
     try{if(codeMode==='set'){if(v.length<4){codeErr='ตั้งรหัสอย่างน้อย 4 ตัว';renderSheet();return}
         await rpc('bd_set_code',{p_old:code,p_new:v});code=v;hasCode=true;unlocked=true;ls.set('bd.code',v);ls.set('bd.ok',1);setSync('cloud');toast('ตั้งรหัสก๊วนแล้ว');closeSheet()}
       else{const ok=await rpc('bd_check',{p_code:v});if(!ok){codeErr='รหัสไม่ถูกต้อง';renderSheet();return}
-        code=v;unlocked=true;ls.set('bd.code',v);ls.set('bd.ok',1);setSync('cloud');toast('ปลดล็อกแล้ว เครื่องนี้แก้ไขและลบข้อมูลได้');closeSheet()}}
+        code=v;unlocked=true;ls.set('bd.code',v);ls.set('bd.ok',1);setSync('cloud');toast('ปลดล็อกแล้ว เครื่องนี้แก้ไขและลบข้อมูลได้');closeSheet();if(pendingA==='openReset')A.openReset();pendingA=''}}
     catch(e){codeErr=e.pg==='28P01'?'รหัสเดิมในเครื่องนี้ไม่ถูกต้อง ปิดแล้วใส่รหัสก๊วนก่อน':'ทำรายการไม่สำเร็จ ลองใหม่';renderSheet()}},
   exportData(){const blob=new Blob([JSON.stringify({app:'sundaybadminton',exported:new Date().toISOString(),players:S.players,days:S.days})],{type:'application/json'}),a=document.createElement('a');
     a.href=URL.createObjectURL(blob);a.download='sundaybadminton-backup-'+dayKey()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('บันทึกไฟล์สำรองแล้ว')},
@@ -912,11 +912,11 @@ const A={
     if(S.session){S.session=null;saveSession()}toast('ลบข้อมูลการแข่งทั้งหมดแล้ว');render()}
 };
 const armed=new WeakMap();
-const ADMIN=new Set(['delMatch','delRound','wipeAll','delPlayer','setCode']);
+const ADMIN=new Set(['delMatch','delRound','wipeAll','delPlayer','setCode','openReset']);let pendingA='';
 document.addEventListener('click',e=>{
   if(e.target.id==='veil'){closeSheet();return}
   const el=e.target.closest('[data-a]');if(!el||el.disabled)return;
-  if(!unlocked&&ADMIN.has(el.dataset.a)){e.preventDefault();codeMode='enter';codeErr='';openSheet('code');return}
+  if(!unlocked&&ADMIN.has(el.dataset.a)){pendingA=el.dataset.a;e.preventDefault();codeMode='enter';codeErr='';openSheet('code');return}
   if(el.dataset.confirm&&!armed.has(el)){armed.set(el,el.innerHTML);const c=el.dataset.confirm;el.textContent=c==='1'?'แตะอีกครั้งเพื่อยืนยัน':c;el.classList.add('armed');
     setTimeout(()=>{if(armed.has(el)){el.innerHTML=armed.get(el);armed.delete(el);el.classList.remove('armed')}},3000);return}
   armed.delete(el);
@@ -946,7 +946,7 @@ loadLocal();setSync('wait');render();connect();
 </script>
 <script>
 /* pick up a newer deploy even when the phone has an older copy cached */
-(function(){var B='1791273398';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
+(function(){var B='1791275717';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
 </script>
 </body>
 </html>
