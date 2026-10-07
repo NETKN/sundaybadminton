@@ -133,6 +133,7 @@ h1{font-size:28px;font-weight:700} h2{font-size:20px;font-weight:600} h3{font-si
 .court .side{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
 .court .side .nm{font-size:14px;font-weight:500;overflow-wrap:anywhere;line-height:1.25}
 .court .side .tno{font-family:var(--f-display);font-size:12px;opacity:.85}
+.court .vs.live{width:auto;height:auto;min-width:40px;border-radius:12px;padding:4px 10px;white-space:nowrap}
 .court .vs{font-family:var(--f-display);font-weight:700;font-size:18px;background:var(--accent);color:var(--accent-ink);width:40px;height:40px;border-radius:50%;display:grid;place-items:center}
 .court .hint{font-size:12px;opacity:.85}
 .court.empty{background:transparent;color:var(--muted);border:2px dashed var(--line);min-height:96px;justify-content:center}
@@ -441,6 +442,7 @@ async function sb(path,opt){const r=await fetch(SB.url+path,Object.assign({heade
 const rpc=(fn,body)=>sb('/rpc/'+fn,{method:'POST',body:JSON.stringify(body||{})});
 function setSync(mode){syncMode=mode;const el=$('#sync');el.className='sync '+mode;el.querySelector('span').textContent={cloud:'Server Online',offline:'ออฟไลน์ · เก็บในเครื่องก่อน',err:'บันทึกไม่สำเร็จ ลองใหม่',wait:'กำลังเชื่อมต่อ…'}[mode]}
 const jobs=[];let pumping=false;
+const touched={};
 function enqueue(key,fn,body){if(!db)return;if(key){const i=jobs.findIndex(j=>j.key===key&&!j.active);if(i>=0){jobs[i]={key,fn,body};pump();return}}jobs.push({key,fn,body});pump()}
 async function pump(){if(pumping)return;pumping=true;
   while(jobs.length){const j=jobs[0];j.active=true;let ok=false;
@@ -450,12 +452,46 @@ async function pump(){if(pumping)return;pumping=true;
     jobs.shift();setSync(ok?'cloud':'err')}
   pumping=false}
 /* everyone: add a player, change a photo, run the round, add a finished match. club code only: overwrite or delete stored documents */
-function dbWrite(path,data,op){const i=path.indexOf('/'),tbl=path.slice(0,i),id=path.slice(i+1);
+function dbWrite(path,data,op){const i=path.indexOf('/'),tbl=path.slice(0,i),id=path.slice(i+1);touched[path]=performance.now();
   if(tbl==='app')return enqueue(path,'bd_put_session',{p_data:data});
   if(op==='addMatch')return enqueue(null,'bd_add_match',{p_day:id,p_match:data});
   if(unlocked)return enqueue(path,'bd_put',{p_code:code,p_tbl:tbl,p_id:id,p_data:data});
   if(op==='addPlayer')return enqueue(null,'bd_add_player',{p_id:id,p_data:data});
   if(op==='photo')return enqueue(path+'#photo','bd_set_photo',{p_id:id,p_photo:data.photo||''})}
+function liveSend(c,k,side,val){touched['live/c'+c]=performance.now();enqueue('live/c'+c+'#'+side,'bd_put_live',{p_court:c,p_k:k,p_side:side,p_val:val})}
+/* ---------- live sync: every open device re-reads what changed every few seconds ---------- */
+const known={};let polling=false,pollFail=0;
+const canon=o=>JSON.stringify(o,(k,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.keys(v).sort().reduce((a,x)=>{if(v[x]!==undefined)a[x]=v[x];return a},{}):v);
+function pendingFor(tbl,id){const p=tbl+'/'+id;return jobs.some(j=>(j.key&&(j.key===p||j.key.indexOf(p+'#')===0))||(tbl==='days'&&j.fn==='bd_add_match'&&j.body.p_day===id)||(tbl==='players'&&j.fn==='bd_add_player'&&j.body.p_id===id))}
+const holdSession=()=>!!sheet&&!['finish','player','code'].includes(sheet);
+async function poll(){if(polling||!db||shufBusy||document.visibilityState!=='visible')return;polling=true;const t0=performance.now();
+  try{const idx=await sb('/bd_docs?select=tbl,id,updated_at');
+    const skip=r=>pendingFor(r.tbl,r.id)||(touched[r.tbl+'/'+r.id]||0)>t0||(r.tbl==='app'&&holdSession());
+    const want=idx.filter(r=>known[r.tbl+'/'+r.id]!==r.updated_at&&!skip(r)).slice(0,25);
+    if(want.length){const f=want.map(r=>'and(tbl.eq.'+r.tbl+',id.eq."'+r.id+'")').join(',');
+      const rows=await sb('/bd_docs?select=tbl,id,data,updated_at&or='+encodeURIComponent('('+f+')'));applyRemote(rows.filter(r=>!skip(r)))}
+    pollFail=0;if(syncMode==='offline')setSync('cloud')
+  }catch(e){if(++pollFail>=3&&syncMode==='cloud')setSync('offline')}
+  polling=false}
+function applyRemote(rows){let ch=false,sch=false,lch=false;
+  rows.forEach(r=>{known[r.tbl+'/'+r.id]=r.updated_at;const d=r.data||{};
+    if(r.tbl==='players'){if(canon(S.players[r.id])!==canon(d)){S.players[r.id]=d;ch=true}}
+    else if(r.tbl==='days'){const nd={matches:Array.isArray(d.matches)?d.matches:[],gone:d.gone||[]},od=S.days[r.id]||{};
+      if(canon({matches:od.matches||[],gone:od.gone||[]})!==canon(nd)){S.days[r.id]=nd;ch=true}}
+    else if(r.tbl==='app'&&r.id==='session'){const ns=d.s||null,os=S.session;
+      if(ns&&os&&os.drawer&&ns.stage==='draw'&&ns.rid===os.rid&&ns.ids.includes(os.drawer)&&!ns.tickets.some(t=>t.by===os.drawer))ns.drawer=os.drawer;
+      if(canon(os)!==canon(ns)){S.session=ns;ch=sch=true}}
+    else if(r.tbl==='live'){if(canon(live[r.id])!==canon(d)){live[r.id]=d;lch=true}}});
+  if(!ch&&!lch)return;
+  if(ch){ls.set('bd.players',S.players);ls.set('bd.days',S.days);ls.set('bd.session',S.session)}
+  const s=S.session,inRound=['draw','setup','play'].includes(view);
+  if(sch){if(!s&&inRound){view='home';toast('round นี้ถูกปิดจากเครื่องอื่นแล้ว')}else if(s&&inRound&&view!==s.stage)view=s.stage}
+  if(sheet==='finish'){const c=s&&s.courts&&s.courts[fin.c];
+    if(!c||!c.teams||c.start!==fin.st){sheet=null;fin=null;toast('สนามนี้ถูกบันทึกหรือเปลี่ยนจากเครื่องอื่นแล้ว');render();return}
+    const l=liveFor(fin.c);if(l){['sa','sb'].forEach(k=>{const el=$('#sc_'+k),v=l[k]|0;if(el&&document.activeElement!==el&&fin[k]!==v){fin[k]=v;el.value=v}});refreshFin()}
+    return}
+  if(!sheet&&(ch||view==='play'))render()}
+setInterval(poll,2500);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')poll()});
 function savePlayer(id,op){ls.set('bd.players',S.players);dbWrite('players/'+id,S.players[id],op)}
 function saveSession(){ls.set('bd.session',S.session);dbWrite('app/session',{s:S.session})}
 function saveDay(k){ls.set('bd.days',S.days);dbWrite('days/'+k,S.days[k])}
@@ -463,11 +499,11 @@ function loadLocal(){S.players=ls.get('bd.players')||{};S.session=ls.get('bd.ses
   const lp=ls.get('bd.lastPick');if(Array.isArray(lp))pickSel=new Set(lp)}
 async function connect(){
   try{
-    const [rows,hc]=await Promise.all([sb('/bd_docs?select=tbl,id,data'),rpc('bd_has_code')]);
+    const [rows,hc]=await Promise.all([sb('/bd_docs?select=tbl,id,data,updated_at'),rpc('bd_has_code')]);
     db=true;hasCode=!!hc;
     unlocked=!hasCode?true:(code?!!(await rpc('bd_check',{p_code:code})):false);ls.set('bd.ok',unlocked&&hasCode?1:0);
     const remoteP={},remoteD={};let ss;
-    rows.forEach(r=>{if(r.tbl==='players')remoteP[r.id]=r.data;else if(r.tbl==='days')remoteD[r.id]={matches:Array.isArray(r.data.matches)?r.data.matches:[],gone:r.data.gone||[]};else if(r.tbl==='app'&&r.id==='session')ss=r.data});
+    rows.forEach(r=>{known[r.tbl+'/'+r.id]=r.updated_at;if(r.tbl==='live'){live[r.id]=r.data||{};return}if(r.tbl==='players')remoteP[r.id]=r.data;else if(r.tbl==='days')remoteD[r.id]={matches:Array.isArray(r.data.matches)?r.data.matches:[],gone:r.data.gone||[]};else if(r.tbl==='app'&&r.id==='session')ss=r.data});
     for(const id in S.players)if(!remoteP[id]&&!S.players[id].hidden){remoteP[id]=S.players[id];dbWrite('players/'+id,S.players[id],'addPlayer')}
     for(const k in S.days){const loc=S.days[k].matches||[];if(!remoteD[k])remoteD[k]={matches:[],gone:[]};
       const have=new Set(remoteD[k].matches.map(m=>m.id));const extra=loc.filter(m=>!have.has(m.id)&&!(remoteD[k].gone||[]).includes(m.id));
@@ -587,9 +623,9 @@ function vPlay(){const s=ses(),rn='Round '+ensureRound(s).no;
   const last=s.courts.length-1,rmB=s.courts.length>1&&!s.courts[last].teams&&!s.courts[last].res?'<button class="btn sm" data-a="rmCourt">ลบสนาม '+(last+1)+'</button>':'';
   const playing=s.courts.some(c=>c.teams);
   let courts='';s.courts.forEach((c,i)=>{
-    if(c.teams){const[a,b]=c.teams.map(team);
+    if(c.teams){const[a,b]=c.teams.map(team),lv=liveFor(i);
       courts+='<button class="court'+(LAND&&s.courts.length<3?' big':'')+'" data-a="openFinish" data-c="'+i+'"><div class="chead"><span class="cname">สนาม '+(i+1)+'</span><span class="clock" data-start="'+c.start+'">'+clock(Date.now()-c.start)+'</span></div>'+
-        '<div class="sides">'+sideHtml(a)+'<span class="vs">VS</span>'+sideHtml(b)+'</div><div class="hint">แข่งจบแล้วแตะที่นี่เพื่อกรอกคะแนน</div></button>'}
+        '<div class="sides">'+sideHtml(a)+(lv&&(lv.sa||lv.sb)?'<span class="vs num live">'+(lv.sa|0)+'–'+(lv.sb|0)+'</span>':'<span class="vs">VS</span>')+sideHtml(b)+'</div><div class="hint">แตะเพื่อจดคะแนน · แข่งจบแล้วกดบันทึกผล</div></button>'}
     else if(c.res&&team(c.res.w)&&team(c.res.l)){const r=c.res;
       courts+='<button class="court done'+(LAND&&s.courts.length<3?' big':'')+'" data-a="courtRes" data-c="'+i+'"><div class="chead"><span class="cname">สนาม '+(i+1)+'</span><span class="cname">จบแล้ว</span></div>'+
         '<div class="sides">'+sideHtml(team(r.w),'','win','<span class="tag w">ชนะ</span>')+'<span class="vs num">'+Math.max(r.sa,r.sb)+'–'+Math.min(r.sa,r.sb)+'</span>'+sideHtml(team(r.l),'','lose','<span class="tag l">แพ้</span>')+'</div>'+
@@ -599,7 +635,7 @@ function vPlay(){const s=ses(),rn='Round '+ensureRound(s).no;
   const shown=new Set(s.courts.flatMap(c=>c.res&&!c.teams?[c.res.w,c.res.l]:[]));
   const idle=idleTeams().filter(t=>!shown.has(t.id)),q=idle.map(t=>teamRow(t)).join('')+s.bench.map(id=>benchRow(id,LAND?' · สลับตัว':' · แตะเพื่อสลับตัว',1)).join('');
   if(LAND)return {title:rn,main:'<div class="courts" style="--n:'+s.courts.length+'">'+courts+'</div>'+(q?'<div class="fit rows queue" data-fit="4.5">'+q+'</div>':''),
-    acts:'<div class="small muted">แข่งจบแล้วแตะที่สนามเพื่อกรอกคะแนน</div>'+addB+rmB+pairB};
+    acts:'<div class="small muted">แตะที่สนามเพื่อจดคะแนน แข่งจบแล้วกดบันทึกผล</div>'+addB+rmB+pairB};
   return {main:'<div class="row"><h1 class="grow">'+rn+'</h1>'+addB+'</div>'+courts+
     '<div class="stack"><div class="label">รอคิว</div>'+(q||'<p class="muted small">ทุกคู่อยู่ในสนาม</p>')+'</div>'+rmB,acts:pairB}}
 
@@ -744,7 +780,7 @@ function shFinish(){const c=ses().courts[fin.c],[a,b]=c.teams.map(team);
   const score='<div class="score">'+box(a,'sa')+box(b,'sb')+'</div>';
   const btns='<button class="btn pri block" id="finSave" data-a="saveFinish">บันทึกผล</button>'+
     '<button class="btn danger block" data-a="cancelMatch" data-confirm="1">'+(LAND?'ยกเลิก match นี้':'ยกเลิก match นี้ ไม่บันทึกผล')+'</button>';
-  return sh('จบการแข่ง · สนาม '+(fin.c+1),LAND?score:time+score+msg,(LAND?time+msg:'')+btns)}
+  return sh('คะแนน · สนาม '+(fin.c+1),LAND?score:time+score+msg,(LAND?time+msg:'')+btns)}
 function refreshFin(){const a=fin.sa,b=fin.sb,ok=a!==b;
   $('#box_sa').classList.toggle('win',a>b);$('#box_sb').classList.toggle('win',b>a);
   $('#finSave').disabled=!ok;
@@ -821,6 +857,11 @@ function shrink(file){return new Promise((res,rej)=>{const r=new FileReader();r.
 
 /* ---------- actions ---------- */
 let shufBusy=false;
+/* live score: kept per court, keyed by that match's start time so an old score never leaks into the next match */
+const live={};
+function liveFor(i){const s=ses(),c=s&&s.courts&&s.courts[i],l=live['c'+i];return l&&c&&c.teams&&c.start&&l.k===String(c.start)?l:null}
+function pushLive(k){if(!fin)return;const id='c'+fin.c,key=String(fin.st),cur=live[id]&&live[id].k===key?live[id]:{k:key,sa:0,sb:0};
+  cur[k]=fin[k];live[id]=cur;if(typeof liveSend==='function')liveSend(fin.c,key,k,fin[k])}
 const A={
   go(d){view=d.v;roundDone=null;render();scrollTo(0,0)},
   resume(){view=ses().stage;render()},
@@ -869,9 +910,9 @@ const A={
     s.stage='play';saveSession();view='play';render();scrollTo(0,0)},
   addCourt(){const s=ses();if(s.courts.length<3){s.courts.push({teams:null,start:null});saveSession();render()}},
   rmCourt(){const s=ses(),l=s.courts.length-1;if(l>0&&!s.courts[l].teams){s.courts.pop();saveSession();render()}},
-  openFinish(d){fin={c:+d.c,sa:0,sb:0};openSheet('finish')},
-  bump(d){fin[d.k]=Math.max(0,Math.min(99,fin[d.k]+(+d.d)));$('#sc_'+d.k).value=fin[d.k];refreshFin()},
-  set21(d){fin[d.k]=21;$('#sc_'+d.k).value=21;refreshFin()},
+  openFinish(d){const i=+d.c,c=ses().courts[i],l=liveFor(i);fin={c:i,st:c.start,sa:l?(l.sa|0):0,sb:l?(l.sb|0):0};openSheet('finish');refreshFin()},
+  bump(d){fin[d.k]=Math.max(0,Math.min(99,fin[d.k]+(+d.d)));$('#sc_'+d.k).value=fin[d.k];refreshFin();pushLive(d.k)},
+  set21(d){fin[d.k]=21;$('#sc_'+d.k).value=21;refreshFin();pushLive(d.k)},
   saveFinish(){if(fin.sa===fin.sb)return;const s=ses(),c=s.courts[fin.c],[ta,tb]=c.teams.map(team),now=Date.now();
     ensureRound(s);const m={id:'m'+uid(),r:s.rid,rn:s.no,t:now,court:fin.c+1,a:[...ta.m],b:[...tb.m],sa:fin.sa,sb:fin.sb,w:fin.sa>fin.sb?'a':'b',dur:now-c.start};
     const k=dayKey();(S.days[k]||(S.days[k]={matches:[]})).matches.push(m);ls.set('bd.days',S.days);dbWrite('days/'+k,m,'addMatch');
@@ -935,7 +976,7 @@ document.addEventListener('click',e=>{
   const f=A[el.dataset.a];if(f)f(el.dataset,el)});
 document.addEventListener('input',e=>{const t=e.target,k=t.dataset.input;
   if(k==='pName'&&draft)draft.name=t.value;
-  if(k==='score'&&fin){fin[t.dataset.k]=Math.max(0,Math.min(99,parseInt(t.value,10)||0));refreshFin()}});
+  if(k==='score'&&fin){fin[t.dataset.k]=Math.max(0,Math.min(99,parseInt(t.value,10)||0));refreshFin();pushLive(t.dataset.k)}});
 document.addEventListener('change',async e=>{const t=e.target,k=t.dataset.change;
   if(k==='sumDay'){sumDay=t.value;sumRound='';render()}
   if(k==='sumRound'){sumRound=t.value;render()}
@@ -958,7 +999,7 @@ loadLocal();setSync('wait');render();connect();
 </script>
 <script>
 /* pick up a newer deploy even when the phone has an older copy cached */
-(function(){var B='1791278954';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
+(function(){var B='1791343414';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
 </script>
 </body>
 </html>
