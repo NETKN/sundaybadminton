@@ -567,7 +567,7 @@ function render(){
   const fn={home:vHome,players:vPlayers,pick:vPick,draw:vDraw,setup:vSetup,play:vPlay,summary:vSummary,reset:vReset,board:vBoard,profile:vProfile}[view]||vHome;
   const r=fn(),app=$('#app'),a=$('#acts');
   app.className='wrap v-'+view;app.innerHTML=r.main;a.innerHTML=r.acts||'';a.hidden=!r.acts;$('#rtitle').textContent=LAND?(r.title||''):'';
-  renderSheet();wake();
+  renderSheet();scatter();wake();
 }
 const endLabel=()=>LAND?'สรุปผล round นี้':'สรุปผล round นี้ แล้วจับฉลากใหม่';
 function vHome(){
@@ -603,8 +603,8 @@ function benchRow(id,txt,act){const tag=act?'button':'div';return '<'+tag+' clas
 function vDraw(){const s=ses();if(mess.length!==s.tickets.length)messUp(s.tickets.length);const left=s.ids.filter(id=>!s.tickets.some(t=>t.by===id)),done=left.length===0,rn='Round '+ensureRound(s).no;
   const chips=left.map(id=>'<button class="chip'+(s.drawer===id?' pick':'')+'" data-a="setDrawer" data-id="'+esc(id)+'">'+av(id,'photo','sm')+'<span class="nm">'+esc(pname(id))+'</span></button>').join('');
   const tix=s.tickets.map((t,i)=>t.by?
-      '<div class="tk up'+(t.l==='W'?' wait':'')+(justDrawn===i?' new':'')+'" style="transform:'+messT(i)+';z-index:'+(mess[i]?mess[i].z:1)+'">'+av(t.by)+'<b>'+(t.l==='W'?'WAIT':t.l)+'</b><span class="who">'+esc(pname(t.by))+'</span></div>':
-      '<button class="tk down" data-a="drawTicket" data-i="'+i+'" aria-label="ฉลากคว่ำ" style="transform:'+messT(i)+';z-index:'+(mess[i]?mess[i].z:1)+'"><b>?</b></button>').join('');
+      '<div class="tk up'+(t.l==='W'?' wait':'')+(justDrawn===i?' new':'')+'" data-i="'+i+'">'+av(t.by)+'<b>'+(t.l==='W'?'WAIT':t.l)+'</b><span class="who">'+esc(pname(t.by))+'</span></div>':
+      '<button class="tk down" data-a="drawTicket" data-i="'+i+'" aria-label="ฉลากคว่ำ"><b>?</b></button>').join('');
   const step2=s.drawer?esc(pname(s.drawer))+' เลือกฉลาก 1 ใบ':'เลือกคนจับ แล้วแตะฉลาก 1 ใบ';
   const shuf='<button class="btn sm" data-a="reshuffle">สุ่มคละใหม่</button>';
   const sg=s.mode==='single',five=s.ids.length===5;let teams;
@@ -885,9 +885,16 @@ function buildTeams(s){const k=Math.floor(s.ids.length/2),W=s.tickets.filter(x=>
     if(s.mode==='single')h.forEach((id,j)=>s.teams.push({id:'t'+n+'ab'[j],no:n,m:[id]}));else s.teams.push({id:'t'+n,no:n,m:h})}
   if(s.mode==='single'){W.forEach(id=>s.teams.push({id:'tw',no:k+1,w:1,m:[id]}));s.bench=[]}else s.bench=W}
 /* tickets lie on the table a little crooked; every reshuffle throws them down differently */
-let mess=[];const rnd=(a,b)=>a+Math.random()*(b-a);
-function messUp(n){mess=Array.from({length:n},()=>({r:rnd(-11,11),x:rnd(-9,9),y:rnd(-7,7),z:1+Math.floor(Math.random()*4)}))}
-const messT=i=>{const m=mess[i]||{r:0,x:0,y:0,z:1},f=LAND?.5:1;return 'translate('+(m.x*f).toFixed(1)+'%,'+(m.y*f).toFixed(1)+'%) rotate('+(m.r*f).toFixed(1)+'deg)'};
+let mess=[],tkP=[];const rnd=(a,b)=>a+Math.random()*(b-a);
+/* free scatter: each ticket gets a random spot anywhere on the table (best of 24 tries = spread out, never a grid), a random tilt and stacking order */
+function messUp(n){mess=[];for(let i=0;i<n;i++){let best=null,bd=-1;
+    for(let c=0;c<24;c++){const q={u:Math.random(),v:Math.random()};let d=9;mess.forEach(o=>{d=Math.min(d,Math.hypot(q.u-o.u,q.v-o.v))});if(d>bd){bd=d;best=q}}
+    best.r=rnd(-22,22);best.z=1+Math.floor(Math.random()*6);mess.push(best)}}
+function scatter(){const g=$('#tgrid');if(!g)return;const els=[...g.querySelectorAll('.tk')],K=.84;els.forEach(e=>{e.style.transform='none'});
+  const gr=g.getBoundingClientRect(),box=els.map(el=>{const r=el.getBoundingClientRect();return {cx:r.left+r.width/2,cy:r.top+r.height/2,w:el.offsetWidth,h:el.offsetHeight}});
+  els.forEach((el,k)=>{const i=+el.dataset.i,m=mess[i],b=box[k];if(!m)return;const hw=b.w*K*.56,hh=b.h*K*.54;
+    const tx=gr.left+hw+m.u*Math.max(0,gr.width-2*hw)-b.cx,ty=gr.top+hh+m.v*Math.max(0,gr.height-2*hh)-b.cy;
+    tkP[i]={x:tx,y:ty};el.style.transform='translate('+tx.toFixed(1)+'px,'+ty.toFixed(1)+'px) rotate('+m.r.toFixed(1)+'deg) scale('+K+')';el.style.zIndex=m.z})}
 /* live score: kept per court, keyed by that match's start time so an old score never leaks into the next match */
 const live={};
 function liveFor(i){const s=ses(),c=s&&s.courts&&s.courts[i],l=live['c'+i];return l&&c&&c.teams&&c.start&&l.k===String(c.start)?l:null}
@@ -921,10 +928,10 @@ const A={
     const mix=()=>{messUp(s.tickets.length);shuffle(labs);idx.forEach((i,j)=>{s.tickets[i].l=labs[j]});saveSession();render()};
     const g=$('#tgrid'),offs=()=>{const gr=g0().getBoundingClientRect(),cx=gr.left+gr.width/2,cy=gr.top+gr.height/2;
       return [...g0().querySelectorAll('.tk.down')].map((el,k,all)=>{const r=el.getBoundingClientRect(),m=(all.length-1)/2;
-        const i=+el.dataset.i,ms=mess[i]||{x:0,y:0},f=LAND?.5:1,w=el.offsetWidth,h=el.offsetHeight;
-        return {el,t:messT(i),x:cx-(r.left+r.width/2-ms.x*f*w/100)+(k-m)*1.5,y:cy-(r.top+r.height/2-ms.y*f*h/100)-(k-m)*1.2,rot:((k*37)%25)-12}})},g0=()=>$('#tgrid');
+        const q=tkP[+el.dataset.i]||{x:0,y:0};
+        return {el,t:el.style.transform||'none',x:cx-(r.left+r.width/2-q.x)+(k-m)*1.5,y:cy-(r.top+r.height/2-q.y)-(k-m)*1.2,rot:((k*37)%25)-12}})},g0=()=>$('#tgrid');
     if(!g||!g.animate||idx.length<2){mix();toast('คละฉลากใหม่แล้ว');return}
-    shufBusy=true;const pile=o=>`translate(${o.x}px,${o.y}px) rotate(${o.rot}deg) scale(.92)`;
+    shufBusy=true;const pile=o=>`translate(${o.x}px,${o.y}px) rotate(${o.rot}deg) scale(.84)`;
     offs().forEach((o,k)=>{o.el.style.zIndex=5+k;o.el.animate([{transform:o.t},{transform:pile(o)}],{duration:380,easing:'cubic-bezier(.5,0,.3,1)',fill:'forwards'})
       .finished.then(()=>o.el.animate([{transform:pile(o)},{transform:pile({x:o.x+(k%2?9:-9),y:o.y,rot:-o.rot})},{transform:pile(o)}],{duration:260,easing:'ease-in-out',fill:'forwards'})).catch(()=>{})});
     setTimeout(()=>{mix();const list=offs();let left=list.length;const done=()=>{if(--left<=0){shufBusy=false}};
@@ -1024,7 +1031,7 @@ setInterval(()=>{document.querySelectorAll('[data-start]').forEach(el=>{el.textC
 let lock=null;async function wake(){const need=view==='play';try{if(need&&!lock&&navigator.wakeLock){lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>{lock=null})}else if(!need&&lock){await lock.release();lock=null}}catch(e){lock=null}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')wake()});
 
-const relayout=()=>{const was=LAND;LAND=mqL.matches;if(was!==LAND)render();else fitAll()};
+const relayout=()=>{const was=LAND;LAND=mqL.matches;if(was!==LAND)render();else{fitAll();if(!shufBusy)scatter()}};
 if(mqL.addEventListener)mqL.addEventListener('change',relayout);else if(mqL.addListener)mqL.addListener(relayout);
 window.addEventListener('resize',relayout);
 loadLocal();setSync('wait');render();connect();
@@ -1032,7 +1039,7 @@ loadLocal();setSync('wait');render();connect();
 </script>
 <script>
 /* pick up a newer deploy even when the phone has an older copy cached */
-(function(){var B='1791346525';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
+(function(){var B='1791348454';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
 </script>
 </body>
 </html>
