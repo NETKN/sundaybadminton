@@ -274,6 +274,19 @@ table.tight .plink{gap:6px}
 .wl .n{font-family:var(--f-display);font-weight:700;font-size:44px;line-height:1.05;font-variant-numeric:tabular-nums}
 .wl .w .n{color:var(--win)} .wl .l .n{color:var(--lose)}
 .pstat{display:flex;flex-direction:column;gap:8px;min-width:0}
+.otp-intro{text-align:center;margin:0}
+.otp-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 0 4px}
+.otp-label{font-family:var(--f-display);font-weight:700;font-size:17px}
+.otp{position:relative;display:flex;gap:12px}
+.otp .bx{width:58px;height:68px;border:2px solid var(--line);border-radius:14px;background:var(--surface);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:30px;color:var(--ink);transition:border-color .12s,box-shadow .12s}
+.otp .bx.fill{border-color:var(--court);background:color-mix(in srgb,var(--ticket) 75%,var(--surface))}
+.otp .bx.on{border-color:var(--court);box-shadow:0 0 0 4px color-mix(in srgb,var(--court) 22%,transparent)}
+.otp.locked .bx{background:var(--ground);border-style:dashed;opacity:.7}
+.otp.err .bx{border-color:var(--lose);animation:otpx .32s}
+@keyframes otpx{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.otp input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;border:0;padding:0;margin:0;cursor:pointer}
+.otp-msg{font-size:12px;color:var(--muted);min-height:16px}.otp-msg.bad{color:var(--lose);font-weight:600}
+.lnk{background:none;border:0;padding:6px;font:inherit;font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;align-self:center}
 .sync.cloud i{background:#74f93b;box-shadow:0 0 6px 2px #74f93b;animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 8px 3px #74f93b}50%{opacity:.35;box-shadow:0 0 2px 0 #74f93b}}
 .foot{gap:8px;flex-wrap:nowrap}
@@ -513,7 +526,8 @@ function applyRemote(rows){let ch=false,sch=false,lch=false;
   if(!sheet&&(ch||view==='play'))render();else if(lch)liveStrip()}
 /* presence: each open device says "still here" every 4 s; the server answers with how many did so in the last 10 s */
 let pingFail=0;
-async function ping(){if(!db||document.visibilityState!=='visible')return;let id=ls.get('bd.dev');if(!id){id='d'+uid()+uid();ls.set('bd.dev',id)}
+function devId(){let id=ls.get('bd.dev');if(!id){id='d'+uid()+uid();ls.set('bd.dev',id)}return id}
+async function ping(){if(!db||document.visibilityState!=='visible')return;const id=devId();
   try{actN=+(await rpc('bd_ping',{p_id:id}))||0;pingFail=0}catch(e){if(++pingFail>=3)actN=0}
   if(syncMode==='cloud')setSync('cloud')}
 setInterval(ping,4000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')ping()});
@@ -862,13 +876,25 @@ function shPair(){const s=ses(),q=idleTeams().filter(t=>!pr.slots.includes(t.id)
   const btns='<button class="btn pri block" data-a="startPair"'+(pr.cs.length?'':' disabled')+'>ลงสนาม · เริ่มจับเวลา</button><button class="btn block" data-a="endRound" data-confirm="1">'+endLabel()+'</button>';
   if(LAND)return sh('จัดคู่ match ถัดไป',swp?'<div class="ncols pp"><div>'+swp+hint+'</div><div>'+body+'</div></div>':hint+body,btns);
   return sh('จัดคู่ match ถัดไป',swp+hint+body,btns)}
-let codeMode='enter',codeErr='';
-function shCode(){const set=codeMode==='set';
-  return sh(set?(hasCode?'เปลี่ยนรหัสก๊วน':'ตั้งรหัสก๊วน'):'ใส่รหัสก๊วน',
-    '<p class="small muted">'+(set?'รหัสนี้ใช้ปลดล็อกการแก้ไขและลบข้อมูลเก่าในแต่ละเครื่อง ตั้งอย่างน้อย 4 ตัว แล้วบอกเฉพาะคนที่ดูแลข้อมูล':'แก้ไขหรือลบข้อมูลจำเป็นต้องกรอกรหัสก่อน (ใส่แค่ครั้งเดียว)')+'</p>'+
-    '<div class="field"><label class="label" for="codeIn">'+(set?'รหัสใหม่':'รหัสก๊วน')+'</label><input type="text" id="codeIn" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false"></div>'+
-    (codeErr?'<div class="small" style="color:var(--lose)">'+esc(codeErr)+'</div>':''),
-    '<button class="btn pri block" data-a="submitCode">'+(set?'บันทึกรหัส':'ปลดล็อก')+'</button>')}
+let codeMode='enter',codeErr='',codeAlt=false;
+const lockLeft=()=>Math.max(0,Math.ceil(((+ls.get('bd.lock')||0)-Date.now())/1000));
+const mmss=n=>Math.floor(n/60)+':'+String(n%60).padStart(2,'0');
+setInterval(()=>{const el=$('#lockT');if(!el)return;const n=lockLeft();if(n>0)el.textContent=mmss(n);else{codeErr='';renderSheet();focusCode()}},1000);
+function focusCode(){const i=$('#codeIn');if(i){try{i.focus()}catch(e){}}}
+function otpPaint(){const i=$('#codeIn'),w=$('#otp');if(!i||!w)return;const v=i.value;w.querySelectorAll('.bx').forEach((b,k)=>{b.textContent=v[k]||'';b.classList.toggle('fill',k<v.length);b.classList.toggle('on',k===Math.min(v.length,3)&&document.activeElement===i)})}
+function shCode(){const set=codeMode==='set',otp=!codeAlt,lk=set?0:lockLeft(),dis=lk?' disabled':'';
+  const intro='<p class="small muted otp-intro">'+(set?'รหัสนี้ใช้ปลดล็อกการแก้ไขและลบข้อมูลเก่าในแต่ละเครื่อง บอกเฉพาะคนที่ดูแลข้อมูล':'แก้ไขหรือลบข้อมูลจำเป็นต้องกรอกรหัสก่อน (ใส่แค่ครั้งเดียว)')+'</p>';
+  const field=otp?'<div class="otp-wrap"><div class="otp-label">'+(set?'ตั้งรหัสใหม่ 4 หลัก':'ระบุรหัสก๊วน')+'</div>'+
+      '<div class="otp'+(lk?' locked':codeErr?' err':'')+'" id="otp"><span class="bx"></span><span class="bx"></span><span class="bx"></span><span class="bx"></span>'+
+      '<input id="codeIn" data-otp="1" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="'+(set?'รหัสใหม่ 4 หลัก':'รหัสก๊วน 4 หลัก')+'"'+dis+'></div>'+
+      '<div class="otp-msg'+(codeErr||lk?' bad':'')+'">'+(lk?'กรอกผิดครบ 5 ครั้ง · ลองใหม่ได้ใน <b class="num" id="lockT">'+mmss(lk)+'</b>':codeErr?esc(codeErr):(set?'ใช้ตัวเลข 4 ตัว':'กรอกครบ 4 หลักแล้วระบบตรวจให้ทันที'))+'</div></div>'
+    :'<div class="field"><label class="label" for="codeIn">'+(set?'รหัสใหม่':'รหัสก๊วน')+'</label><input type="text" id="codeIn" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false"'+dis+'></div>'+(lk?'<div class="otp-msg bad">กรอกผิดครบ 5 ครั้ง · ลองใหม่ได้ใน <b class="num" id="lockT">'+mmss(lk)+'</b></div>':codeErr?'<div class="small" style="color:var(--lose)">'+esc(codeErr)+'</div>':'');
+  const alt=set?'':'<button class="lnk" data-a="codeText">'+(otp?'รหัสเดิมไม่ใช่ตัวเลข 4 หลัก? พิมพ์รหัสแบบข้อความ':'กลับไปกรอกแบบ 4 หลัก')+'</button>';
+  return sh(set?(hasCode?'เปลี่ยนรหัสก๊วน':'ตั้งรหัสก๊วน'):'ใส่รหัสก๊วน',intro+field+alt,
+    (set||!otp)?'<button class="btn pri block" data-a="submitCode"'+dis+'>'+(set?'บันทึกรหัส':'ปลดล็อก')+'</button>':'')}
+document.addEventListener('input',e=>{const t=e.target;if(t.id!=='codeIn'||!t.dataset.otp)return;t.value=t.value.replace(/\D/g,'').slice(0,4);const w=$('#otp');if(w)w.classList.remove('err');otpPaint();
+  if(t.value.length===4&&codeMode==='enter')A.submitCode()});
+document.addEventListener('focusin',e=>{if(e.target.id==='codeIn')otpPaint()});document.addEventListener('focusout',e=>{if(e.target.id==='codeIn')otpPaint()});
 function importData(obj){if(!obj||typeof obj!=='object'||(!obj.players&&!obj.days))throw new Error('bad');let np=0,nm=0;
   for(const id in obj.players||{}){const p=obj.players[id];if(!p||!p.name)continue;S.players[id]=Object.assign({},p,{id});savePlayer(id);np++}
   for(const k in obj.days||{}){if(!/^\d{4}-\d{2}-\d{2}$/.test(k))continue;const cur=S.days[k]||(S.days[k]={matches:[],gone:[]}),have=new Set(cur.matches.map(m=>m.id));
@@ -1019,15 +1045,18 @@ const A={
   openProfile(d){if(view!=='profile')profBack=view;profId=d.id;view='profile';render();scrollTo(0,0)},
   back(){view=profBack||'home';render();scrollTo(0,0)},
   bPg(d){bPage+=+d.d;render()},
-  openCode(){codeMode='enter';codeErr='';openSheet('code')},
-  setCode(){codeMode='set';codeErr='';openSheet('code')},
+  openCode(){codeMode='enter';codeErr='';codeAlt=false;openSheet('code');focusCode()},
+  setCode(){codeMode='set';codeErr='';codeAlt=false;openSheet('code');focusCode()},
+  codeText(){codeAlt=!codeAlt;codeErr='';renderSheet();focusCode()},
   syncTap(){if(syncMode==='offline'||syncMode==='err'){setSync('wait');connect()}},
-  async submitCode(){const v=($('#codeIn').value||'').trim();if(!db){codeErr='ตอนนี้ออฟไลน์อยู่ ต่ออินเทอร์เน็ตแล้วลองใหม่';renderSheet();return}
-    try{if(codeMode==='set'){if(v.length<4){codeErr='ตั้งรหัสอย่างน้อย 4 ตัว';renderSheet();return}
+  async submitCode(){const v=($('#codeIn').value||'').trim();if(!db){codeErr='ตอนนี้ออฟไลน์อยู่ ต่ออินเทอร์เน็ตแล้วลองใหม่';renderSheet();focusCode();return}
+    try{if(codeMode==='set'){if(!/^\d{4}$/.test(v)){codeErr='รหัสต้องเป็นตัวเลข 4 หลัก';renderSheet();focusCode();return}
         await rpc('bd_set_code',{p_old:code,p_new:v});code=v;hasCode=true;unlocked=true;ls.set('bd.code',v);ls.set('bd.ok',1);setSync('cloud');toast('ตั้งรหัสก๊วนแล้ว');closeSheet()}
-      else{const ok=await rpc('bd_check',{p_code:v});if(!ok){codeErr='รหัสไม่ถูกต้อง';renderSheet();return}
+      else{if(lockLeft()>0){renderSheet();return}if(!v)return;const r=await rpc('bd_check2',{p_code:v,p_dev:devId()});
+        if(!r||!r.ok){if(r&&r.wait>0){ls.set('bd.lock',Date.now()+r.wait*1000);codeErr=''}else codeErr='รหัสไม่ถูกต้อง'+(r&&r.left>0?' · เหลืออีก '+r.left+' ครั้ง':'');renderSheet();focusCode();return}
+        ls.set('bd.lock',0);
         code=v;unlocked=true;ls.set('bd.code',v);ls.set('bd.ok',1);setSync('cloud');toast('ปลดล็อกแล้ว เครื่องนี้แก้ไขและลบข้อมูลได้');closeSheet();if(pendingA==='openReset')A.openReset();pendingA=''}}
-    catch(e){codeErr=e.pg==='28P01'?'รหัสเดิมในเครื่องนี้ไม่ถูกต้อง ปิดแล้วใส่รหัสก๊วนก่อน':'ทำรายการไม่สำเร็จ ลองใหม่';renderSheet()}},
+    catch(e){codeErr=e.pg==='28P01'?'รหัสเดิมในเครื่องนี้ไม่ถูกต้อง ปิดแล้วใส่รหัสก๊วนก่อน':'ทำรายการไม่สำเร็จ ลองใหม่';renderSheet();focusCode()}},
   exportData(){const blob=new Blob([JSON.stringify({app:'sundaybadminton',exported:new Date().toISOString(),players:S.players,days:S.days})],{type:'application/json'}),a=document.createElement('a');
     a.href=URL.createObjectURL(blob);a.download='sundaybadminton-backup-'+dayKey()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('บันทึกไฟล์สำรองแล้ว')},
   openReset(){rDay='';rPage=0;view='reset';render();scrollTo(0,0)},
@@ -1042,7 +1071,7 @@ const ADMIN=new Set(['delMatch','delRound','wipeAll','delPlayer','setCode','open
 document.addEventListener('click',e=>{
   if(e.target.id==='veil'){closeSheet();return}
   const el=e.target.closest('[data-a]');if(!el||el.disabled)return;
-  if(!unlocked&&ADMIN.has(el.dataset.a)){pendingA=el.dataset.a;e.preventDefault();codeMode='enter';codeErr='';openSheet('code');return}
+  if(!unlocked&&ADMIN.has(el.dataset.a)){pendingA=el.dataset.a;e.preventDefault();codeMode='enter';codeErr='';codeAlt=false;openSheet('code');focusCode();return}
   if(el.dataset.confirm&&!armed.has(el)){armed.set(el,el.innerHTML);const c=el.dataset.confirm;el.textContent=c==='1'?'แตะอีกครั้งเพื่อยืนยัน':c;el.classList.add('armed');
     setTimeout(()=>{if(armed.has(el)){el.innerHTML=armed.get(el);armed.delete(el);el.classList.remove('armed')}},3000);return}
   armed.delete(el);
@@ -1054,7 +1083,7 @@ document.addEventListener('change',async e=>{const t=e.target,k=t.dataset.change
   if(k==='sumDay'){sumDay=t.value;sumRound='';render()}
   if(k==='sumRound'){sumRound=t.value;render()}
   if(k==='rDay'){rDay=t.value;rPage=0;render()}
-  if(k==='import'&&t.files&&t.files[0]){if(!unlocked){codeMode='enter';codeErr='';openSheet('code');return}
+  if(k==='import'&&t.files&&t.files[0]){if(!unlocked){codeMode='enter';codeErr='';codeAlt=false;openSheet('code');focusCode();return}
     try{importData(JSON.parse(await t.files[0].text()))}catch(err){toast('ไฟล์นี้อ่านไม่ได้ ต้องเป็นไฟล์สำรองของแอปนี้')}t.value=''}
   if(k==='photo'&&draft&&t.files&&t.files[0]){try{draft[t.dataset.k]=await shrink(t.files[0]);renderSheet()}catch(err){toast('เปิดรูปนี้ไม่ได้ ลองรูปอื่น')}}});
 document.addEventListener('focusin',e=>{if(e.target.dataset&&e.target.dataset.input==='score')e.target.select()});
@@ -1074,7 +1103,7 @@ loadLocal();setSync('wait');render();connect();
 </script>
 <script>
 /* pick up a newer deploy even when the phone has an older copy cached */
-(function(){var B='1791356839';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
+(function(){var B='1791359131';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
 </script>
 </body>
 </html>
