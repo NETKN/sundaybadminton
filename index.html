@@ -133,12 +133,16 @@ h1{font-size:28px;font-weight:700} h2{font-size:20px;font-weight:600} h3{font-si
 .court .side{display:flex;flex-direction:column;align-items:center;gap:6px;min-width:0}
 .court .side .nm{font-size:14px;font-weight:500;overflow-wrap:anywhere;line-height:1.25}
 .court .side .tno{font-family:var(--f-display);font-size:12px;opacity:.85}
-.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface);flex:none}
-.seg button{border:0;background:none;font-family:var(--f-display);font-weight:700;font-size:12px;letter-spacing:.06em;padding:8px 12px;color:var(--muted);cursor:pointer;min-height:36px}
-#acts .seg{display:flex}#acts .seg button{flex:1}
-.seg button.on{background:var(--accent);color:var(--accent-ink)}
+.sw{position:relative;flex:none;width:112px;height:38px;border:0;border-radius:999px;background:#12B76A;box-shadow:inset 0 2px 5px rgba(0,0,0,.22);cursor:pointer;padding:0;transition:background .22s ease;font-family:var(--f-display)}
+.sw.off{background:#C9CFD3}
+.sw i{position:absolute;top:4px;left:4px;width:30px;height:30px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.3);transform:translateX(74px);transition:transform .22s ease}
+.sw.off i{transform:none}
+.sw .t{position:absolute;top:0;bottom:0;display:grid;place-items:center;font-weight:700;font-size:12px;letter-spacing:.06em;transition:opacity .18s ease}
+.sw .d{left:12px;color:#fff}.sw .s{right:12px;color:#3C474D;opacity:0}
+.sw.off .d{opacity:0}.sw.off .s{opacity:1}
+#acts .sw{align-self:center}
 .team.vsrow .nm{flex:1;min-width:0}.team.vsrow .vsm{font-family:var(--f-display);font-weight:700;font-size:12px;color:var(--muted);padding:0 6px}
-.tgrid:not(.fit){padding:8px 6px}
+.tgrid:not(.fit){padding:10px 6px 44px}
 .court .vs.live{width:auto;height:auto;min-width:40px;border-radius:12px;padding:4px 10px;white-space:nowrap}
 .court .vs{font-family:var(--f-display);font-weight:700;font-size:18px;background:var(--accent);color:var(--accent-ink);width:40px;height:40px;border-radius:50%;display:grid;place-items:center}
 .court .hint{font-size:12px;opacity:.85}
@@ -600,7 +604,7 @@ function vPick(){const ps=activePlayers();[...pickSel].forEach(id=>{if(!P(id)||P
     pgrid(ps.map(p=>pcell(p,pickSel.has(p.id)?'on':'','togglePick')).join('')+addCell),acts:cta}}
 let justDrawn=-1;
 function benchRow(id,txt,act){const tag=act?'button':'div';return '<'+tag+' class="team wait"'+(act?' data-a="openSwap" data-id="'+esc(id)+'"':'')+'><span class="tn">WAIT</span>'+av(id,'photo','sm')+'<span class="nm">'+esc(pname(id))+(txt||'')+'</span></'+tag+'>'}
-function vDraw(){const s=ses();if(mess.length!==s.tickets.length)messUp(s.tickets.length);const left=s.ids.filter(id=>!s.tickets.some(t=>t.by===id)),done=left.length===0,rn='Round '+ensureRound(s).no;
+function vDraw(){const s=ses();if(mess.n!==s.tickets.length)messUp(s.tickets.length);const left=s.ids.filter(id=>!s.tickets.some(t=>t.by===id)),done=left.length===0,rn='Round '+ensureRound(s).no;
   const chips=left.map(id=>'<button class="chip'+(s.drawer===id?' pick':'')+'" data-a="setDrawer" data-id="'+esc(id)+'">'+av(id,'photo','sm')+'<span class="nm">'+esc(pname(id))+'</span></button>').join('');
   const tix=s.tickets.map((t,i)=>t.by?
       '<div class="tk up'+(t.l==='W'?' wait':'')+(justDrawn===i?' new':'')+'" data-i="'+i+'">'+av(t.by)+'<b>'+(t.l==='W'?'WAIT':t.l)+'</b><span class="who">'+esc(pname(t.by))+'</span></div>':
@@ -612,7 +616,7 @@ function vDraw(){const s=ses();if(mess.length!==s.tickets.length)messUp(s.ticket
       teams+='<div class="team vsrow"><span class="tn">'+a.no+'</span>'+av(a.m[0],'photo','sm')+'<span class="nm">'+esc(pname(a.m[0]))+'</span><span class="vsm">VS</span>'+av(b.m[0],'photo','sm')+'<span class="nm">'+esc(pname(b.m[0]))+'</span></div>'}
     teams+=s.teams.filter(t=>t.w).map(t=>benchRow(t.m[0],LAND?' รอคิว':' รอคิวลง match ถัดไป')).join('')}
   else teams=s.teams.map(t=>teamRow(t)).join('')+s.bench.map(id=>benchRow(id,LAND?' รอก่อน':' นั่งรอก่อน แล้วสลับกับ'+(five?'ฝั่งแพ้':'ผู้ชนะ')+' match แรก 1 คน')).join('');
-  const modeT='<div class="seg" role="group" aria-label="โหมดการแข่ง"><button class="'+(sg?'':'on')+'" data-a="setMode" data-m="double">DOUBLE</button><button class="'+(sg?'on':'')+'" data-a="setMode" data-m="single">SINGLE</button></div>';
+  const modeT='<button class="sw'+(sg?' off':'')+'" role="switch" aria-checked="'+(!sg)+'" aria-label="โหมดการแข่ง: '+(sg?'SINGLE':'DOUBLE')+'" data-a="setMode"><span class="t d">DOUBLE</span><span class="t s">SINGLE</span><i></i></button>';
   const RND='<svg class="rnd" viewBox="0 0 48 48" aria-hidden="true"><defs><linearGradient id="rndg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFA23A"/><stop offset="1" stop-color="#FF2D62"/></linearGradient></defs><circle cx="24" cy="24" r="24" fill="url(#rndg)"/><path d="M33.500 25a9.500 9.500 0 1 1-5.300-8.500" fill="none" stroke="#fff" stroke-width="4.600" stroke-linecap="round"/><path d="M27 10.600l9.200 5.200-8.600 5.600z" fill="#fff"/></svg>';
   const again='<button class="btn sm rndb" data-a="redraw" data-confirm="แตะอีกครั้ง จับใหม่ทั้งหมด">'+RND+'<span>จับฉลากใหม่</span></button>';
   const next='<button class="btn pri block" data-a="toSetup">ไปจัดสนามแข่ง</button>';
@@ -738,7 +742,7 @@ function vSummary(){const keys=Object.keys(S.days).filter(k=>S.days[k].matches.l
     if(sTab==='hl')body='<div class="pods">'+pods+'</div>';
     else{const cfg={pl:[st.players,15,1.9,x=>'<span class="pname">'+av(x.id,'photo','sm')+'<b>'+esc(pname(x.id))+'</b></span><span class="num">'+x.w+' ชนะ · '+(x.g-x.w)+' แพ้</span><span class="muted">'+x.g+' match · '+esc(mins(x.t))+'</span>'],
         pr:[st.pairs,12,2.3,x=>'<b>'+esc(names(x.ids))+'</b><span class="num">'+x.w+' ชนะ จาก '+x.g+' match</span><span class="muted">แต้มได้เสีย '+diff(x)+'</span>'],
-        ms:[st.ms.slice().reverse(),8,2.6,m=>'<span class="rowx muted"><span class="grow">R'+(m.rn||1)+' · สนาม '+m.court+' · '+mTime(m)+' · '+clock(m.dur)+'</span><button class="btn sm danger" data-a="delMatch" data-id="'+esc(m.id)+'" data-confirm="ยืนยันลบ">ลบ</button></span>'+
+        ms:[st.ms.slice().reverse(),8,2.6,m=>'<span class="rowx muted"><span class="grow">R'+(m.rn||1)+' · สนาม '+m.court+' · '+mTime(m)+' · '+clock(m.dur)+'</span></span>'+
           '<span class="'+(m.w==='a'?'wn':'')+'">'+esc(names(m.a))+' <b class="num">'+m.sa+'</b></span><span class="'+(m.w==='b'?'wn':'')+'">'+esc(names(m.b))+' <b class="num">'+m.sb+'</b></span>']}[sTab];
       pages=Math.max(1,Math.ceil(cfg[0].length/cfg[1]));sPage=Math.max(0,Math.min(pages-1,sPage));
       body='<div class="fit" data-fit="'+cfg[2]+'">'+cfg[0].slice(sPage*cfg[1],(sPage+1)*cfg[1]).map(x=>sTab==='pl'?'<button class="scell" data-a="openProfile" data-id="'+esc(x.id)+'">'+cfg[3](x)+'</button>':'<div class="scell">'+cfg[3](x)+'</div>').join('')+'</div>'}
@@ -750,7 +754,7 @@ function vSummary(){const keys=Object.keys(S.days).filter(k=>S.days[k].matches.l
   h+='<div class="stack"><h2>รายคู่</h2><div class="tbl-wrap"><table><thead><tr><th>คู่</th><th>match</th><th>ชนะ</th><th>แต้มได้เสีย</th></tr></thead><tbody>'+
     st.pairs.map(x=>'<tr><td>'+esc(names(x.ids))+'</td><td>'+x.g+'</td><td>'+x.w+'</td><td>'+diff(x)+'</td></tr>').join('')+'</tbody></table></div></div>';
   h+='<div class="stack"><h2>match ทั้งหมด ('+st.ms.length+')</h2>'+st.ms.slice().reverse().map(m=>
-    '<div class="panel stack"><div class="row small muted"><span class="grow">Round '+(m.rn||1)+' · สนาม '+m.court+' · '+mTime(m)+' · '+clock(m.dur)+'</span><button class="btn sm danger" data-a="delMatch" data-id="'+esc(m.id)+'" data-confirm="1">ลบ</button></div>'+
+    '<div class="panel stack"><div class="row small muted"><span class="grow">Round '+(m.rn||1)+' · สนาม '+m.court+' · '+mTime(m)+' · '+clock(m.dur)+'</span></div>'+
     '<div class="row"><span class="grow" style="'+(m.w==='a'?'font-weight:600;color:var(--win)':'')+'">'+esc(names(m.a))+'</span><span class="num" style="font-weight:700">'+m.sa+' – '+m.sb+'</span><span class="grow" style="text-align:right;'+(m.w==='b'?'font-weight:600;color:var(--win)':'')+'">'+esc(names(m.b))+'</span></div></div>').join('')+'</div>';
   return {main:h}}
 
@@ -885,16 +889,32 @@ function buildTeams(s){const k=Math.floor(s.ids.length/2),W=s.tickets.filter(x=>
     if(s.mode==='single')h.forEach((id,j)=>s.teams.push({id:'t'+n+'ab'[j],no:n,m:[id]}));else s.teams.push({id:'t'+n,no:n,m:h})}
   if(s.mode==='single'){W.forEach(id=>s.teams.push({id:'tw',no:k+1,w:1,m:[id]}));s.bench=[]}else s.bench=W}
 /* tickets lie on the table a little crooked; every reshuffle throws them down differently */
-let mess=[],tkP=[];const rnd=(a,b)=>a+Math.random()*(b-a);
-/* free scatter: each ticket gets a random spot anywhere on the table (best of 24 tries = spread out, never a grid), a random tilt and stacking order */
-function messUp(n){mess=[];for(let i=0;i<n;i++){let best=null,bd=-1;
-    for(let c=0;c<24;c++){const q={u:Math.random(),v:Math.random()};let d=9;mess.forEach(o=>{d=Math.min(d,Math.hypot(q.u-o.u,q.v-o.v))});if(d>bd){bd=d;best=q}}
-    best.r=rnd(-22,22);best.z=1+Math.floor(Math.random()*6);mess.push(best)}}
-function scatter(){const g=$('#tgrid');if(!g)return;const els=[...g.querySelectorAll('.tk')],K=.84;els.forEach(e=>{e.style.transform='none'});
-  const gr=g.getBoundingClientRect(),box=els.map(el=>{const r=el.getBoundingClientRect();return {cx:r.left+r.width/2,cy:r.top+r.height/2,w:el.offsetWidth,h:el.offsetHeight}});
-  els.forEach((el,k)=>{const i=+el.dataset.i,m=mess[i],b=box[k];if(!m)return;const hw=b.w*K*.56,hh=b.h*K*.54;
-    const tx=gr.left+hw+m.u*Math.max(0,gr.width-2*hw)-b.cx,ty=gr.top+hh+m.v*Math.max(0,gr.height-2*hh)-b.cy;
-    tkP[i]={x:tx,y:ty};el.style.transform='translate('+tx.toFixed(1)+'px,'+ty.toFixed(1)+'px) rotate('+m.r.toFixed(1)+'deg) scale('+K+')';el.style.zIndex=m.z})}
+let mess={n:0,seed:1},tkP=[],tkKey='',tkLay=null;
+/* free scatter: every reshuffle picks a new seed; tickets land anywhere on the table at a random tilt, but no ticket may have more than a quarter of its face covered */
+function messUp(n){mess={n,seed:1+Math.floor(Math.random()*2e9)}}
+const prng=a=>()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+const rectPoly=(cx,cy,w,h,deg)=>{const r=deg*Math.PI/180,c=Math.cos(r),s=Math.sin(r);return [[-w/2,-h/2],[w/2,-h/2],[w/2,h/2],[-w/2,h/2]].map(([x,y])=>[cx+x*c-y*s,cy+x*s+y*c])};
+function polyArea(p){let a=0;for(let i=0;i<p.length;i++){const q=p[(i+1)%p.length];a+=p[i][0]*q[1]-q[0]*p[i][1]}return Math.abs(a)/2}
+function clipArea(A,B){let out=A;for(let i=0;i<B.length&&out.length;i++){const p=B[i],q=B[(i+1)%B.length],inp=out;out=[];
+    const side=v=>(q[0]-p[0])*(v[1]-p[1])-(q[1]-p[1])*(v[0]-p[0]);
+    for(let j=0;j<inp.length;j++){const c=inp[j],d=inp[(j+1)%inp.length],sc=side(c),sd=side(d);if(sc>=0)out.push(c);
+      if((sc>=0)!==(sd>=0)){const t=sc/(sc-sd);out.push([c[0]+t*(d[0]-c[0]),c[1]+t*(d[1]-c[1])])}}}
+  return out.length>2?polyArea(out):0}
+function layTickets(n,W,H,w0,h0){const LIM=.22;let last=null;
+  for(const K of [.84,.8,.76,.72,.68,.64,.6,.56,.52])for(let att=0;att<3;att++){const R=prng(mess.seed+att*7919+Math.round(K*100)),w=w0*K,h=h0*K,area=w*h,P=[],cov=[];let ok=true;
+    for(let i=0;i<n;i++){let best=null;
+      for(let c=0;c<160;c++){const r=(R()*2-1)*20,rad=Math.abs(r)*Math.PI/180,bw=(w*Math.cos(rad)+h*Math.sin(rad))/2+2,bh=(w*Math.sin(rad)+h*Math.cos(rad))/2+2;
+        const cx=bw+R()*Math.max(0,W-2*bw),cy=bh+R()*Math.max(0,H-2*bh),poly=rectPoly(cx,cy,w,h,r);let self=0,worst=0;const add=[];
+        for(let j=0;j<P.length;j++){const o=Math.hypot(cx-P[j].cx,cy-P[j].cy)>Math.hypot(w,h)?0:clipArea(poly,P[j].poly)/area;add.push(o);self+=o;worst=Math.max(worst,cov[j]+o)}
+        const score=Math.max(self,worst);if(!best||score<best.score)best={cx,cy,r,poly,add,self,score};if(score<=LIM&&c>=6)break}
+      if(best.score>LIM)ok=false;best.add.forEach((o,j)=>{cov[j]+=o});cov.push(best.self);P.push(best)}
+    last={K,P};if(ok)return last}
+  return last}
+function scatter(){const g=$('#tgrid');if(!g)return;const els=[...g.querySelectorAll('.tk')];if(!els.length)return;els.forEach(e=>{e.style.transform='none'});
+  const gr=g.getBoundingClientRect(),box=els.map(el=>{const r=el.getBoundingClientRect();return {cx:r.left+r.width/2,cy:r.top+r.height/2}}),w0=els[0].offsetWidth,h0=els[0].offsetHeight;
+  const key=[mess.seed,els.length,Math.round(gr.width),Math.round(gr.height),w0,h0].join('|');if(key!==tkKey||!tkLay){tkLay=layTickets(els.length,gr.width,gr.height,w0,h0);tkKey=key}
+  els.forEach((el,k)=>{const i=+el.dataset.i,m=tkLay.P[i],b=box[k];if(!m)return;const tx=gr.left+m.cx-b.cx,ty=gr.top+m.cy-b.cy;
+    tkP[i]={x:tx,y:ty,z:1+i};el.style.transform='translate('+tx.toFixed(1)+'px,'+ty.toFixed(1)+'px) rotate('+m.r.toFixed(1)+'deg) scale('+tkLay.K+')';el.style.zIndex=1+((i*7+mess.seed)%els.length)})}
 /* live score: kept per court, keyed by that match's start time so an old score never leaks into the next match */
 const live={};
 function liveFor(i){const s=ses(),c=s&&s.courts&&s.courts[i],l=live['c'+i];return l&&c&&c.teams&&c.start&&l.k===String(c.start)?l:null}
@@ -931,18 +951,19 @@ const A={
         const q=tkP[+el.dataset.i]||{x:0,y:0};
         return {el,t:el.style.transform||'none',x:cx-(r.left+r.width/2-q.x)+(k-m)*1.5,y:cy-(r.top+r.height/2-q.y)-(k-m)*1.2,rot:((k*37)%25)-12}})},g0=()=>$('#tgrid');
     if(!g||!g.animate||idx.length<2){mix();toast('คละฉลากใหม่แล้ว');return}
-    shufBusy=true;const pile=o=>`translate(${o.x}px,${o.y}px) rotate(${o.rot}deg) scale(.84)`;
+    shufBusy=true;const pile=o=>`translate(${o.x}px,${o.y}px) rotate(${o.rot}deg) scale(${tkLay?tkLay.K:.84})`;
     offs().forEach((o,k)=>{o.el.style.zIndex=5+k;o.el.animate([{transform:o.t},{transform:pile(o)}],{duration:380,easing:'cubic-bezier(.5,0,.3,1)',fill:'forwards'})
       .finished.then(()=>o.el.animate([{transform:pile(o)},{transform:pile({x:o.x+(k%2?9:-9),y:o.y,rot:-o.rot})},{transform:pile(o)}],{duration:260,easing:'ease-in-out',fill:'forwards'})).catch(()=>{})});
     setTimeout(()=>{mix();const list=offs();let left=list.length;const done=()=>{if(--left<=0){shufBusy=false}};
       list.forEach((o,k)=>{o.el.style.zIndex=5+k;const an=o.el.animate([{transform:pile(o)},{transform:o.t}],{duration:420,delay:k*35,easing:'cubic-bezier(.2,.8,.3,1)',fill:'backwards'});
-        an.finished.then(()=>{const i=+o.el.dataset.i;o.el.style.zIndex=mess[i]?mess[i].z:1;done()}).catch(done)});
+        an.finished.then(()=>{scatter();done()}).catch(done)});
       setTimeout(()=>{shufBusy=false},420+list.length*35+200);toast('คละฉลากใหม่แล้ว')},660)},
   drawTicket(d){if(shufBusy)return;const s=ses();if(!s.drawer){toast('เลือกคนจับก่อน แล้วค่อยแตะฉลาก');return}
     const t=s.tickets[+d.i];if(!t||t.by)return;t.by=s.drawer;s.drawer=null;justDrawn=+d.i;setTimeout(()=>{justDrawn=-1},400);
     if(s.tickets.every(x=>x.by))buildTeams(s);
     saveSession();render()},
-  setMode(d){const s=ses();if(!s||s.stage!=='draw'||!s.tickets.every(x=>x.by))return;s.mode=d.m==='single'?'single':'double';buildTeams(s);saveSession();render()},
+  setMode(){const s=ses();if(!s||s.stage!=='draw'||!s.tickets.every(x=>x.by))return;s.mode=s.mode==='single'?'double':'single';buildTeams(s);saveSession();
+    const el=$('.sw');if(el){el.classList.toggle('off',s.mode==='single');setTimeout(render,230)}else render()},
   redraw(){const s=ses();messUp(s.ids.length);s.mode='double';s.tickets=shuffle(ticketLabels(s.ids.length)).map(l=>({l,by:null}));s.drawer=null;s.teams=[];s.bench=[];s.stage='draw';saveSession();toast('คละฉลากใหม่แล้ว เริ่มจับได้เลย');render();scrollTo(0,0)},
   toSetup(){const s=ses();s.stage='setup';saveSession();view='setup';render();scrollTo(0,0)},
   nCourts(d){const s=ses();s.nCourts=Math.max(1,Math.min(3,s.nCourts+(+d.d)));saveSession();render()},
@@ -1039,7 +1060,7 @@ loadLocal();setSync('wait');render();connect();
 </script>
 <script>
 /* pick up a newer deploy even when the phone has an older copy cached */
-(function(){var B='1791348454';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
+(function(){var B='1791349011';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
 </script>
 </body>
 </html>
