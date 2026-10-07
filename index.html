@@ -274,6 +274,9 @@ table.tight .plink{gap:6px}
 .wl .n{font-family:var(--f-display);font-weight:700;font-size:44px;line-height:1.05;font-variant-numeric:tabular-nums}
 .wl .w .n{color:var(--win)} .wl .l .n{color:var(--lose)}
 .pstat{display:flex;flex-direction:column;gap:8px;min-width:0}
+/* the code sheet opens from the top so the phone keyboard never covers the boxes */
+@media not ((orientation:landscape) and (max-height:560px)){.veil:has(#codeIn){align-items:flex-start}
+.veil:has(#codeIn) .sheet{border-radius:0 0 20px 20px;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px 18px;max-height:60%}}
 .otp-intro{text-align:center;margin:0}
 .otp-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 0 4px}
 .otp-label{font-family:var(--f-display);font-weight:700;font-size:17px}
@@ -1103,7 +1106,7 @@ loadLocal();setSync('wait');render();connect();
 </script>
 <script>
 /* pick up a newer deploy even when the phone has an older copy cached */
-(function(){var B='1791359543';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
+(function(){var B='1791360395';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
 </script>
 </body>
 </html>
