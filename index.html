@@ -811,7 +811,7 @@ function shFinish(){const c=ses().courts[fin.c],[a,b]=c.teams.map(team);
     '<div class="step"><button data-a="bump" data-k="'+k+'" data-d="-1" aria-label="ลด">−</button><button data-a="bump" data-k="'+k+'" data-d="1" aria-label="เพิ่ม">+</button><button data-a="set21" data-k="'+k+'" class="num">21</button></div></div>';
   const time='<div class="small muted">เวลาแข่ง <span class="num" data-start="'+c.start+'">'+clock(Date.now()-c.start)+'</span></div>',msg='<div id="finMsg" class="small muted"></div>';
   const score='<div class="score">'+box(a,'sa')+box(b,'sb')+'</div>';
-  const btns='<button class="btn pri block" id="finSave" data-a="saveFinish">สิ้นสุดการแข่ง</button>'+
+  const btns='<button class="btn pri block" id="finSave" data-a="saveFinish" data-confirm="1">สิ้นสุดการแข่ง</button>'+
     '<button class="btn danger block" data-a="cancelMatch" data-confirm="1">'+(LAND?'ยกเลิก match นี้':'ยกเลิก match นี้ ไม่บันทึกผล')+'</button>';
   return sh('คะแนน · สนาม '+(fin.c+1),LAND?score:time+score+msg,(LAND?time+msg:'')+btns)}
 function refreshFin(){const a=fin.sa,b=fin.sb,ok=a!==b;
@@ -1074,7 +1074,7 @@ loadLocal();setSync('wait');render();connect();
 </script>
 <script>
 /* pick up a newer deploy even when the phone has an older copy cached */
-(function(){var B='1791356127';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
+(function(){var B='1791356839';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
 </script>
 </body>
 </html>
