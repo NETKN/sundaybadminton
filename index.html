@@ -489,8 +489,8 @@ function applyRemote(rows){let ch=false,sch=false,lch=false;
   if(sheet==='finish'){const c=s&&s.courts&&s.courts[fin.c];
     if(!c||!c.teams||c.start!==fin.st){sheet=null;fin=null;toast('สนามนี้ถูกบันทึกหรือเปลี่ยนจากเครื่องอื่นแล้ว');render();return}
     const l=liveFor(fin.c);if(l){['sa','sb'].forEach(k=>{const el=$('#sc_'+k),v=l[k]|0;if(el&&document.activeElement!==el&&fin[k]!==v){fin[k]=v;el.value=v}});refreshFin()}
-    return}
-  if(!sheet&&(ch||view==='play'))render()}
+    liveStrip();return}
+  if(!sheet&&(ch||view==='play'))render();else if(lch)liveStrip()}
 setInterval(poll,2500);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')poll()});
 function savePlayer(id,op){ls.set('bd.players',S.players);dbWrite('players/'+id,S.players[id],op)}
 function saveSession(){ls.set('bd.session',S.session);dbWrite('app/session',{s:S.session})}
@@ -861,7 +861,9 @@ let shufBusy=false;
 const live={};
 function liveFor(i){const s=ses(),c=s&&s.courts&&s.courts[i],l=live['c'+i];return l&&c&&c.teams&&c.start&&l.k===String(c.start)?l:null}
 function pushLive(k){if(!fin)return;const id='c'+fin.c,key=String(fin.st),cur=live[id]&&live[id].k===key?live[id]:{k:key,sa:0,sb:0};
-  cur[k]=fin[k];live[id]=cur;if(typeof liveSend==='function')liveSend(fin.c,key,k,fin[k])}
+  cur[k]=fin[k];live[id]=cur;if(typeof liveSend==='function')liveSend(fin.c,key,k,fin[k]);liveStrip()}
+function liveStrip(){document.querySelectorAll('#app [data-a="openFinish"]').forEach(el=>{const l=liveFor(+el.dataset.c),v=el.querySelector('.vs');if(!v)return;const on=l&&(l.sa||l.sb);
+  v.className=on?'vs num live':'vs';v.textContent=on?(l.sa|0)+'–'+(l.sb|0):'VS'})}
 const A={
   go(d){view=d.v;roundDone=null;render();scrollTo(0,0)},
   resume(){view=ses().stage;render()},
@@ -999,7 +1001,7 @@ loadLocal();setSync('wait');render();connect();
 </script>
 <script>
 /* pick up a newer deploy even when the phone has an older copy cached */
-(function(){var B='1791343414';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
+(function(){var B='1791344160';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
 </script>
 </body>
 </html>
