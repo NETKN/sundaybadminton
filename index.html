@@ -16,6 +16,7 @@
 <style>
 /* Layout: one-column courtside phone app. Court-mat green carries every "on court" surface; ticket cream carries the draw; yellow is the single action colour. */
 :root{
+  --sl:env(safe-area-inset-left,0px); --sr:env(safe-area-inset-right,0px);
   --ground:#ECF1ED; --surface:#FFFFFF; --ink:#11261F; --muted:#5B6F66; --line:#D2DCD6;
   --court:#0F6B55; --court-deep:#0B5544; --court-ink:#F4FBF7; --court-line:rgba(255,255,255,.5);
   --accent:#F2B705; --accent-ink:#2A2000;
@@ -142,7 +143,8 @@ h1{font-size:28px;font-weight:700} h2{font-size:20px;font-weight:600} h3{font-si
 .sw.off .d{opacity:0}.sw.off .s{opacity:1}
 #acts .sw{align-self:center}
 .team.vsrow .nm{flex:1;min-width:0}.team.vsrow .vsm{font-family:var(--f-display);font-weight:700;font-size:12px;color:var(--muted);padding:0 6px}
-.tgrid:not(.fit){padding:10px 6px 44px}
+.tgrid{display:block;position:relative;min-height:120px}
+.tgrid .tk{position:absolute;left:0;top:0;width:120px;height:150px;aspect-ratio:auto}
 .court .vs.live{width:auto;height:auto;min-width:40px;border-radius:12px;padding:4px 10px;white-space:nowrap}
 .court .vs{font-family:var(--f-display);font-weight:700;font-size:18px;background:var(--accent);color:var(--accent-ink);width:40px;height:40px;border-radius:50%;display:grid;place-items:center}
 .court .hint{font-size:12px;opacity:.85}
@@ -315,8 +317,10 @@ label.btn{cursor:pointer;position:relative}
 
 @media (orientation:landscape) and (max-height:560px){
   html{height:100%;box-sizing:border-box}
-  body{height:100%;overflow:hidden;display:grid;grid-template-columns:calc(178px + env(safe-area-inset-left,0px)) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);grid-template-areas:"bar main" "acts main"}
-  .bar{grid-area:bar;position:static;border-bottom:0;padding-left:env(safe-area-inset-left,0px)}
+  html.nl{--sr:min(env(safe-area-inset-right,0px),14px)}
+  html.nr{--sl:min(env(safe-area-inset-left,0px),14px)}
+  body{position:fixed;inset:0;height:auto;width:auto;overflow:hidden;padding-bottom:min(env(safe-area-inset-bottom,0px),12px);display:grid;grid-template-columns:calc(178px + var(--sl)) minmax(0,1fr);grid-template-rows:auto minmax(0,1fr);grid-template-areas:"bar main" "acts main"}
+  .bar{grid-area:bar;position:static;border-bottom:0;padding-left:var(--sl)}
   .bar-in{flex-wrap:wrap;gap:4px 8px;padding:8px 10px 2px}
   .bar .name{display:none;font-size:17px}
   .at-home .bar .name{display:block}
@@ -325,25 +329,30 @@ label.btn{cursor:pointer;position:relative}
   #rtitle{display:block;flex:1;min-width:0;font-family:var(--f-display);font-weight:700;font-size:16px;line-height:1.15}
   #rtitle:empty{display:none}
   .sync{flex-basis:100%;font-size:11px}
-  #acts{grid-area:acts;position:static;margin:0;width:auto;max-width:none;border:0;border-radius:0;box-shadow:none;background:none;padding:4px 10px 10px calc(10px + env(safe-area-inset-left,0px));justify-content:flex-end;gap:6px;min-height:0;overflow:hidden;font-size:13px;line-height:1.25}
+  #acts{grid-area:acts;position:static;margin:0;width:auto;max-width:none;border:0;border-radius:0;box-shadow:none;background:none;padding:4px 10px 10px calc(10px + var(--sl));justify-content:flex-end;gap:6px;min-height:0;overflow:hidden;font-size:13px;line-height:1.25}
   #acts>.btn,.sacts>.btn{min-height:0;flex:0 1 46px;padding:2px 8px;font-size:14px;width:100%}
   #acts>.btn.pri,.sacts>.btn.pri{flex-basis:56px;font-size:15px}
   #acts>.btn.mini{flex-basis:32px;font-size:12px}
   .at-home #acts>.btn.pri{flex-basis:76px;font-size:18px}
   .tabs .btn{min-height:36px;padding:2px 4px;font-size:13px}
-  .wrap{grid-area:main;max-width:none;margin:0;height:100%;min-height:0;overflow:hidden;padding-block:10px;padding-inline:12px calc(12px + env(safe-area-inset-right,0px));gap:8px;border-left:1px solid var(--line)}
+  .wrap{grid-area:main;max-width:none;margin:0;height:100%;min-height:0;overflow:hidden;padding-block:10px;padding-inline:12px calc(12px + var(--sr));gap:8px;border-left:1px solid var(--line)}
   .toast{bottom:14px}
   .hero{flex:1;min-height:0;justify-content:center;padding:20px 28px}
   .hero .big{font-size:min(96px,30vh)}
   .split{display:flex;gap:10px;flex:1;min-height:0}
+  .split .tgrid{flex:1;min-width:0;min-height:0}
   .split .names{flex:0 0 31%;display:flex;flex-direction:column;gap:6px;min-width:0;min-height:0}
   .courts{display:grid;grid-template-columns:repeat(var(--n),minmax(0,1fr));gap:8px;flex:1 1 0;min-height:0}
   .courts .court{height:100%;min-height:0;justify-content:space-evenly;padding:12px 12px 14px;container-type:size}
   .courts .hint,.courts .tno{display:none}
-  .courts .court .av{width:min(72px,30cqh,18cqw);height:min(72px,30cqh,18cqw);font-size:min(24px,10cqh,6cqw)}
-  .courts .court .nm{font-size:min(20px,9cqh,6.5cqw)}
-  .courts .clock{font-size:min(30px,13cqh,11cqw)}
-  .courts .vs{width:min(44px,12cqw);height:min(44px,12cqw);font-size:min(18px,5cqw)}
+  .courts .court .av{width:min(104px,36cqh,22cqw);height:min(104px,36cqh,22cqw);font-size:min(30px,11cqh,7cqw)}
+  .courts .court.done .av{width:min(80px,30cqh,17cqw);height:min(80px,30cqh,17cqw);font-size:min(24px,9cqh,5.5cqw)}
+  .courts .duo .av + .av{margin-left:-4cqw}
+  .courts .court .nm{font-size:min(26px,10cqh,7.6cqw)}
+  .courts .clock{font-size:min(42px,15cqh,13cqw)}
+  .courts .cname{font-size:min(18px,6.5cqh,6cqw)}
+  .courts .vs{width:min(56px,14cqw);height:min(56px,14cqw);font-size:min(22px,6cqw)}
+  .courts .vs.live{width:auto;height:auto;font-size:min(34px,13cqh,9cqw);padding:2px 3cqw}
   .courts .court.done .vs{width:auto;height:auto;font-size:min(26px,11cqh,8cqw)}
   .courts .court.done .hint{display:block;font-size:12px}
   .pgc{grid-auto-rows:minmax(0,1fr)}
@@ -388,7 +397,7 @@ label.btn{cursor:pointer;position:relative}
   .hl3 .val{font-family:var(--f-display);font-size:22px;font-weight:700}
   .empty-note{flex:1;display:grid;place-items:center}
   .veil{align-items:stretch}
-  .sheet{max-width:none;max-height:none;height:100%;border-radius:0;overflow:hidden;padding:calc(10px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) calc(12px + env(safe-area-inset-left,0px))}
+  .sheet{max-width:none;max-height:none;height:100%;border-radius:0;overflow:hidden;padding:calc(10px + env(safe-area-inset-top,0px)) calc(12px + var(--sr)) calc(10px + env(safe-area-inset-bottom,0px)) calc(12px + var(--sl))}
   .sgrid{display:grid;grid-template-columns:minmax(0,1fr) 178px;gap:12px;height:100%;min-height:0}
   .sbody{display:flex;flex-direction:column;gap:8px;min-height:0;min-width:0;overflow:hidden}
   .sacts{display:flex;flex-direction:column;gap:6px;min-height:0;overflow:hidden}
@@ -623,7 +632,7 @@ function vDraw(){const s=ses();if(mess.n!==s.tickets.length)messUp(s.tickets.len
   if(LAND){
     if(done)return {title:rn+' · ผลจับฉลาก',main:'<div class="fit rows" data-fit="4.5">'+teams+'</div>',acts:modeT+again+next};
     return {title:rn+' · จับฉลาก',main:'<div class="split"><div class="names"><div class="label">คนจับ · เหลือ '+left.length+'</div><div class="fit rows" data-fit="3">'+chips+'</div></div>'+
-      '<div class="tgrid fit tix" data-fit=".8" id="tgrid">'+tix+'</div></div>',acts:'<div><b>'+step2+'</b></div>'+shuf}}
+      '<div class="tgrid" id="tgrid">'+tix+'</div></div>',acts:'<div><b>'+step2+'</b></div>'+shuf}}
   let h=done?'<div class="row"><h1 class="grow">'+rn+' · ผลการจับฉลาก</h1>'+again+'</div>':'<h1>'+rn+' · จับฉลาก</h1>';
   if(!done)h+='<div class="stack"><div class="label">1 · เลือกคนจับ (เหลือ '+left.length+' คน)</div><div class="dchips">'+chips+'</div></div>'+
     '<div class="stack"><div class="row"><div class="label grow">2 · '+step2+'</div>'+shuf+'</div><div class="tgrid" id="tgrid">'+tix+'</div></div>';
@@ -900,21 +909,24 @@ function clipArea(A,B){let out=A;for(let i=0;i<B.length&&out.length;i++){const p
     for(let j=0;j<inp.length;j++){const c=inp[j],d=inp[(j+1)%inp.length],sc=side(c),sd=side(d);if(sc>=0)out.push(c);
       if((sc>=0)!==(sd>=0)){const t=sc/(sc-sd);out.push([c[0]+t*(d[0]-c[0]),c[1]+t*(d[1]-c[1])])}}}
   return out.length>2?polyArea(out):0}
-function layTickets(n,W,H,w0,h0){const LIM=.22;let last=null;
-  for(const K of [.84,.8,.76,.72,.68,.64,.6,.56,.52])for(let att=0;att<3;att++){const R=prng(mess.seed+att*7919+Math.round(K*100)),w=w0*K,h=h0*K,area=w*h,P=[],cov=[];let ok=true;
+function layTickets(n,W,H,w0,h0){const LIM=.22;let last=null;const top=Math.min(2.2,.46*W/w0,.8*H/h0),Ks=[];for(let k=top;k>.34;k*=.94)Ks.push(k);
+  for(const K of Ks)for(let att=0;att<5;att++){const R=prng(mess.seed+att*7919+Math.round(K*100)),w=w0*K,h=h0*K,area=w*h,P=[],cov=[];let ok=true;
     for(let i=0;i<n;i++){let best=null;
       for(let c=0;c<160;c++){const r=(R()*2-1)*20,rad=Math.abs(r)*Math.PI/180,bw=(w*Math.cos(rad)+h*Math.sin(rad))/2+2,bh=(w*Math.sin(rad)+h*Math.cos(rad))/2+2;
         const cx=bw+R()*Math.max(0,W-2*bw),cy=bh+R()*Math.max(0,H-2*bh),poly=rectPoly(cx,cy,w,h,r);let self=0,worst=0;const add=[];
         for(let j=0;j<P.length;j++){const o=Math.hypot(cx-P[j].cx,cy-P[j].cy)>Math.hypot(w,h)?0:clipArea(poly,P[j].poly)/area;add.push(o);self+=o;worst=Math.max(worst,cov[j]+o)}
         const score=Math.max(self,worst);if(!best||score<best.score)best={cx,cy,r,poly,add,self,score};if(score<=LIM&&c>=6)break}
-      if(best.score>LIM)ok=false;best.add.forEach((o,j)=>{cov[j]+=o});cov.push(best.self);P.push(best)}
-    last={K,P};if(ok)return last}
+      if(best.score>LIM){ok=false;if(K>Ks[Ks.length-1]||att<4)break}best.add.forEach((o,j)=>{cov[j]+=o});cov.push(best.self);P.push(best)}
+    if(ok||!last||P.length===n)last={K,P};if(ok)return last}
   return last}
-function scatter(){const g=$('#tgrid');if(!g)return;const els=[...g.querySelectorAll('.tk')];if(!els.length)return;els.forEach(e=>{e.style.transform='none'});
-  const gr=g.getBoundingClientRect(),box=els.map(el=>{const r=el.getBoundingClientRect();return {cx:r.left+r.width/2,cy:r.top+r.height/2}}),w0=els[0].offsetWidth,h0=els[0].offsetHeight;
-  const key=[mess.seed,els.length,Math.round(gr.width),Math.round(gr.height),w0,h0].join('|');if(key!==tkKey||!tkLay){tkLay=layTickets(els.length,gr.width,gr.height,w0,h0);tkKey=key}
-  els.forEach((el,k)=>{const i=+el.dataset.i,m=tkLay.P[i],b=box[k];if(!m)return;const tx=gr.left+m.cx-b.cx,ty=gr.top+m.cy-b.cy;
-    tkP[i]={x:tx,y:ty,z:1+i};el.style.transform='translate('+tx.toFixed(1)+'px,'+ty.toFixed(1)+'px) rotate('+m.r.toFixed(1)+'deg) scale('+tkLay.K+')';el.style.zIndex=1+((i*7+mess.seed)%els.length)})}
+const TW=120,TH=150;
+function scatter(){const g=$('#tgrid');if(!g)return;const els=[...g.querySelectorAll('.tk')],n=els.length;if(!n)return;
+  /* the table: landscape = whatever is left beside the name list; portrait while drawing = down to the bottom of the screen; portrait results = a compact block above the pair list */
+  if(LAND)g.style.height='';else{const top=g.getBoundingClientRect().top+scrollY,W=g.clientWidth;
+    g.style.height=Math.round(g.querySelector('.tk.down')?Math.max(330,innerHeight-top-44):Math.ceil(n/3)*W/3*1.25*.82)+'px'}
+  const W=g.clientWidth,H=g.clientHeight,key=[mess.seed,n,W,H].join('|');if(key!==tkKey||!tkLay){tkLay=layTickets(n,W,H,TW,TH);tkKey=key}
+  els.forEach(el=>{const i=+el.dataset.i,m=tkLay.P[i];if(!m)return;const tx=m.cx-TW/2,ty=m.cy-TH/2;
+    tkP[i]={x:tx,y:ty};el.style.transform='translate('+tx.toFixed(1)+'px,'+ty.toFixed(1)+'px) rotate('+m.r.toFixed(1)+'deg) scale('+tkLay.K.toFixed(3)+')';el.style.zIndex=1+((i*7+mess.seed)%n)})}
 /* live score: kept per court, keyed by that match's start time so an old score never leaks into the next match */
 const live={};
 function liveFor(i){const s=ses(),c=s&&s.courts&&s.courts[i],l=live['c'+i];return l&&c&&c.teams&&c.start&&l.k===String(c.start)?l:null}
@@ -1052,7 +1064,9 @@ setInterval(()=>{document.querySelectorAll('[data-start]').forEach(el=>{el.textC
 let lock=null;async function wake(){const need=view==='play';try{if(need&&!lock&&navigator.wakeLock){lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>{lock=null})}else if(!need&&lock){await lock.release();lock=null}}catch(e){lock=null}}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')wake()});
 
-const relayout=()=>{const was=LAND;LAND=mqL.matches;if(was!==LAND)render();else{fitAll();if(!shufBusy)scatter()}};
+const notch=()=>{const t=(screen.orientation&&screen.orientation.type)||'',a=typeof window.orientation==='number'?window.orientation:(t==='landscape-primary'?90:t==='landscape-secondary'?-90:0);
+  document.documentElement.classList.toggle('nl',a===90);document.documentElement.classList.toggle('nr',a===-90||a===270)};notch();window.addEventListener('orientationchange',()=>{notch();setTimeout(relayout,120)});
+const relayout=()=>{notch();const was=LAND;LAND=mqL.matches;if(was!==LAND)render();else{fitAll();if(!shufBusy)scatter()}};
 if(mqL.addEventListener)mqL.addEventListener('change',relayout);else if(mqL.addListener)mqL.addListener(relayout);
 window.addEventListener('resize',relayout);
 loadLocal();setSync('wait');render();connect();
@@ -1060,7 +1074,7 @@ loadLocal();setSync('wait');render();connect();
 </script>
 <script>
 /* pick up a newer deploy even when the phone has an older copy cached */
-(function(){var B='1791349011';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
+(function(){var B='1791350232';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
 </script>
 </body>
 </html>
