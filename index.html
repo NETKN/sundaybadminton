@@ -268,6 +268,9 @@ table.tight .plink{gap:6px}
 .wl .n{font-family:var(--f-display);font-weight:700;font-size:44px;line-height:1.05;font-variant-numeric:tabular-nums}
 .wl .w .n{color:var(--win)} .wl .l .n{color:var(--lose)}
 .pstat{display:flex;flex-direction:column;gap:8px;min-width:0}
+.sy{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:none}
+.act{font-size:11px;line-height:1.3;border:1px solid var(--line);border-radius:8px;padding:2px 8px;background:var(--surface);color:var(--muted);white-space:nowrap}
+.act b{color:var(--ink);font-family:var(--f-display)}
 .sync.cloud i{background:#74f93b;box-shadow:0 0 6px 2px #74f93b;animation:pulse 1.6s ease-in-out infinite}
 @keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 8px 3px #74f93b}50%{opacity:.35;box-shadow:0 0 2px 0 #74f93b}}
 .foot{gap:8px;flex-wrap:nowrap}
@@ -406,6 +409,7 @@ label.btn{cursor:pointer;position:relative}
   .slots .slot{padding:6px 4px}
 }
 @media (orientation:landscape) and (max-height:350px){.pods .pd .small{display:none}.pods .p1 .pstep{height:17vh}.pods .p2 .pstep{height:11vh}.pods .p3 .pstep{height:7vh}}
+@media (orientation:landscape) and (max-height:560px){.sy{flex-basis:100%;align-items:flex-start}.sy .sync{flex-basis:auto}}
 </style>
 
 </head>
@@ -413,7 +417,7 @@ label.btn{cursor:pointer;position:relative}
 <header class="bar"><div class="bar-in">
   <button class="btn sm" id="homeBtn" data-a="go" data-v="home" aria-label="หน้าแรก" hidden>‹<span class="hb"> หน้าแรก</span></button>
   <div class="name">Sunday Badminton</div><div id="rtitle"></div>
-  <button class="sync" id="sync" data-a="syncTap"><i></i><span>กำลังเชื่อมต่อ…</span></button>
+  <div class="sy"><button class="sync" id="sync" data-a="syncTap"><i></i><span>กำลังเชื่อมต่อ…</span></button><div class="act" id="act" hidden>Active Users: <b class="num">–</b></div></div>
 </div></header>
 <main class="wrap" id="app"></main>
 <div class="cta" id="acts" hidden></div>
@@ -497,6 +501,11 @@ function applyRemote(rows){let ch=false,sch=false,lch=false;
     const l=liveFor(fin.c);if(l){['sa','sb'].forEach(k=>{const el=$('#sc_'+k),v=l[k]|0;if(el&&document.activeElement!==el&&fin[k]!==v){fin[k]=v;el.value=v}});refreshFin()}
     liveStrip();return}
   if(!sheet&&(ch||view==='play'))render();else if(lch)liveStrip()}
+/* presence: each open device says "still here" every 4 s; the server answers with how many did so in the last 10 s */
+let pingFail=0;
+async function ping(){if(!db||document.visibilityState!=='visible')return;let id=ls.get('bd.dev');if(!id){id='d'+uid()+uid();ls.set('bd.dev',id)}const el=$('#act');
+  try{const n=await rpc('bd_ping',{p_id:id});pingFail=0;el.hidden=false;el.querySelector('b').textContent=n}catch(e){if(++pingFail>=3)el.hidden=true}}
+setInterval(ping,4000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')ping()});
 setInterval(poll,2500);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')poll()});
 function savePlayer(id,op){ls.set('bd.players',S.players);dbWrite('players/'+id,S.players[id],op)}
 function saveSession(){ls.set('bd.session',S.session);dbWrite('app/session',{s:S.session})}
@@ -517,7 +526,7 @@ async function connect(){
     S.players=remoteP;S.days=remoteD;
     if(ss!==undefined){S.session=ss.s||null}else if(S.session){dbWrite('app/session',{s:S.session})}
     ls.set('bd.players',S.players);ls.set('bd.days',S.days);ls.set('bd.session',S.session);
-    setSync('cloud');
+    setSync('cloud');ping();
     if(!sheet){if(view==='home'||!S.session&&['draw','setup','play'].includes(view))view='home';render()}
   }catch(e){db=false;setSync('offline')}
 }
@@ -1025,7 +1034,7 @@ loadLocal();setSync('wait');render();connect();
 </script>
 <script>
 /* pick up a newer deploy even when the phone has an older copy cached */
-(function(){var B='1791345842';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
+(function(){var B='1791346304';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
 </script>
 </body>
 </html>
