@@ -658,7 +658,7 @@ function vPlay(){const s=ses(),rn='Round '+ensureRound(s).no;
   let courts='';s.courts.forEach((c,i)=>{
     if(c.teams){const[a,b]=c.teams.map(team),lv=liveFor(i);
       courts+='<button class="court'+(LAND&&s.courts.length<3?' big':'')+'" data-a="openFinish" data-c="'+i+'"><div class="chead"><span class="cname">สนาม '+(i+1)+'</span><span class="clock" data-start="'+c.start+'">'+clock(Date.now()-c.start)+'</span></div>'+
-        '<div class="sides">'+sideHtml(a)+(lv&&(lv.sa||lv.sb)?'<span class="vs num live">'+(lv.sa|0)+'–'+(lv.sb|0)+'</span>':'<span class="vs">VS</span>')+sideHtml(b)+'</div><div class="hint">แตะเพื่อจดคะแนน · แข่งจบแล้วกดบันทึกผล</div></button>'}
+        '<div class="sides">'+sideHtml(a)+(lv&&(lv.sa||lv.sb)?'<span class="vs num live">'+(lv.sa|0)+'–'+(lv.sb|0)+'</span>':'<span class="vs">VS</span>')+sideHtml(b)+'</div><div class="hint">แตะเพื่อจดคะแนน · แข่งจบแล้วกดสิ้นสุดการแข่ง</div></button>'}
     else if(c.res&&team(c.res.w)&&team(c.res.l)){const r=c.res;
       courts+='<button class="court done'+(LAND&&s.courts.length<3?' big':'')+'" data-a="courtRes" data-c="'+i+'"><div class="chead"><span class="cname">สนาม '+(i+1)+'</span><span class="cname">จบแล้ว</span></div>'+
         '<div class="sides">'+sideHtml(team(r.w),'','win','<span class="tag w">ชนะ</span>')+'<span class="vs num">'+Math.max(r.sa,r.sb)+'–'+Math.min(r.sa,r.sb)+'</span>'+sideHtml(team(r.l),'','lose','<span class="tag l">แพ้</span>')+'</div>'+
@@ -668,7 +668,7 @@ function vPlay(){const s=ses(),rn='Round '+ensureRound(s).no;
   const shown=new Set(s.courts.flatMap(c=>c.res&&!c.teams?[c.res.w,c.res.l]:[]));
   const idle=idleTeams().filter(t=>!shown.has(t.id)),q=idle.map(t=>teamRow(t)).join('')+s.bench.map(id=>benchRow(id,LAND?' · สลับตัว':' · แตะเพื่อสลับตัว',1)).join('');
   if(LAND)return {title:rn,main:'<div class="courts" style="--n:'+s.courts.length+'">'+courts+'</div>'+(q?'<div class="fit rows queue" data-fit="4.5">'+q+'</div>':''),
-    acts:'<div class="small muted">แตะที่สนามเพื่อจดคะแนน แข่งจบแล้วกดบันทึกผล</div>'+addB+rmB+pairB};
+    acts:'<div class="small muted">แตะที่สนามเพื่อจดคะแนน แข่งจบแล้วกดสิ้นสุดการแข่ง</div>'+addB+rmB+pairB};
   return {main:'<div class="row"><h1 class="grow">'+rn+'</h1>'+addB+'</div>'+courts+
     '<div class="stack"><div class="label">รอคิว</div>'+(q||'<p class="muted small">ทุก'+U()+'อยู่ในสนาม</p>')+'</div>'+rmB,acts:pairB}}
 
@@ -811,7 +811,7 @@ function shFinish(){const c=ses().courts[fin.c],[a,b]=c.teams.map(team);
     '<div class="step"><button data-a="bump" data-k="'+k+'" data-d="-1" aria-label="ลด">−</button><button data-a="bump" data-k="'+k+'" data-d="1" aria-label="เพิ่ม">+</button><button data-a="set21" data-k="'+k+'" class="num">21</button></div></div>';
   const time='<div class="small muted">เวลาแข่ง <span class="num" data-start="'+c.start+'">'+clock(Date.now()-c.start)+'</span></div>',msg='<div id="finMsg" class="small muted"></div>';
   const score='<div class="score">'+box(a,'sa')+box(b,'sb')+'</div>';
-  const btns='<button class="btn pri block" id="finSave" data-a="saveFinish">บันทึกผล</button>'+
+  const btns='<button class="btn pri block" id="finSave" data-a="saveFinish">สิ้นสุดการแข่ง</button>'+
     '<button class="btn danger block" data-a="cancelMatch" data-confirm="1">'+(LAND?'ยกเลิก match นี้':'ยกเลิก match นี้ ไม่บันทึกผล')+'</button>';
   return sh('คะแนน · สนาม '+(fin.c+1),LAND?score:time+score+msg,(LAND?time+msg:'')+btns)}
 function refreshFin(){const a=fin.sa,b=fin.sb,ok=a!==b;
@@ -1074,7 +1074,7 @@ loadLocal();setSync('wait');render();connect();
 </script>
 <script>
 /* pick up a newer deploy even when the phone has an older copy cached */
-(function(){var B='1791350232';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
+(function(){var B='1791356127';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
 </script>
 </body>
 </html>
