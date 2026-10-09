@@ -1,17 +1,4 @@
-<!doctype html>
-<html lang="th">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Sunday Badminton">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#0F6B55">
-<link rel="apple-touch-icon" href="icon.png?v=2">
-<link rel="icon" type="image/png" href="icon.png?v=2">
-<style>html{-webkit-text-size-adjust:100%}:root{color-scheme:light;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0;font-size:14px}img{max-width:100%}[hidden]{display:none!important}</style>
-<title>Sunday Badminton</title>
+<title>จับคู่ก๊วนแบด</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans+Thai:wght@400;500;600&display=swap">
 <style>
 /* Layout: one-column courtside phone app. Court-mat green carries every "on court" surface; ticket cream carries the draw; yellow is the single action colour. */
@@ -54,7 +41,7 @@ h1{font-size:28px;font-weight:700} h2{font-size:20px;font-weight:600} h3{font-si
 .bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--ground);border-bottom:1px solid var(--line)}
 .bar-in{max-width:540px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;gap:10px}
 .bar .name{font-family:var(--f-display);font-weight:700;font-size:18px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.sync{background:none;border:0;padding:6px 0;cursor:pointer;font-family:inherit;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
+.sync{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px;white-space:nowrap}
 .sync i{width:8px;height:8px;border-radius:50%;background:var(--muted)}
 .sync.cloud i{background:var(--win)} .sync.err i{background:var(--lose)}
 .wrap{max-width:540px;margin:0 auto;padding-inline:16px;padding-block:18px 40px;display:flex;flex-direction:column;gap:18px}
@@ -290,30 +277,6 @@ table.tight .plink{gap:6px}
 .wl .n{font-family:var(--f-display);font-weight:700;font-size:44px;line-height:1.05;font-variant-numeric:tabular-nums}
 .wl .w .n{color:var(--win)} .wl .l .n{color:var(--lose)}
 .pstat{display:flex;flex-direction:column;gap:8px;min-width:0}
-/* the code sheet opens from the top so the phone keyboard never covers the boxes */
-@media not ((orientation:landscape) and (max-height:560px)){.veil:has(#codeIn){align-items:flex-start}
-.veil:has(#codeIn) .sheet{border-radius:0 0 20px 20px;padding:calc(env(safe-area-inset-top,0px) + 16px) 16px 18px;max-height:60%}}
-.otp-intro{text-align:center;margin:0}
-.otp-wrap{display:flex;flex-direction:column;align-items:center;gap:10px;padding:10px 0 4px}
-.otp-label{font-family:var(--f-display);font-weight:700;font-size:17px}
-.otp{position:relative;display:flex;gap:12px}
-.otp .bx{width:58px;height:68px;border:2px solid var(--line);border-radius:14px;background:var(--surface);display:grid;place-items:center;font-family:var(--f-display);font-weight:700;font-size:30px;color:var(--ink);transition:border-color .12s,box-shadow .12s}
-.otp .bx.fill{border-color:var(--court);background:color-mix(in srgb,var(--ticket) 75%,var(--surface))}
-.otp .bx.on{border-color:var(--court);box-shadow:0 0 0 4px color-mix(in srgb,var(--court) 22%,transparent)}
-.otp.locked .bx{background:var(--ground);border-style:dashed;opacity:.7}
-.otp.err .bx{border-color:var(--lose);animation:otpx .32s}
-@keyframes otpx{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
-.otp input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;border:0;padding:0;margin:0;cursor:pointer}
-.otp-msg{font-size:12px;color:var(--muted);min-height:16px}.otp-msg.bad{color:var(--lose);font-weight:600}
-.lnk{background:none;border:0;padding:6px;font:inherit;font-size:12px;color:var(--muted);text-decoration:underline;cursor:pointer;align-self:center}
-.sync.cloud i{background:#74f93b;box-shadow:0 0 6px 2px #74f93b;animation:pulse 1.6s ease-in-out infinite}
-@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 8px 3px #74f93b}50%{opacity:.35;box-shadow:0 0 2px 0 #74f93b}}
-.foot{gap:8px;flex-wrap:nowrap}
-.foot .btn{white-space:nowrap;min-width:0}
-.tabs .btn.mini{min-height:32px;font-size:12px;padding:2px 4px}
-.tabs3{display:grid;grid-template-columns:1fr;gap:4px}
-.tabs3 .btn{min-height:32px;font-size:12px;padding:2px 4px}
-label.btn{cursor:pointer;position:relative}
 /* ---------- side rail + fit-to-screen pieces (used when the phone is sideways) ---------- */
 #rtitle{display:none}
 #acts{margin:0 auto 12px;width:calc(100% - 32px);max-width:508px}
@@ -461,12 +424,10 @@ label.btn{cursor:pointer;position:relative}
 @media (orientation:landscape) and (max-height:350px){.pods .pd .small{display:none}.pods .p1 .pstep{height:17vh}.pods .p2 .pstep{height:11vh}.pods .p3 .pstep{height:7vh}}
 </style>
 
-</head>
-<body>
 <header class="bar"><div class="bar-in">
   <button class="btn sm" id="homeBtn" data-a="go" data-v="home" aria-label="หน้าแรก" hidden>‹<span class="hb"> หน้าแรก</span></button>
-  <div class="name">Sunday Badminton</div><div id="rtitle"></div>
-  <button class="sync" id="sync" data-a="syncTap"><i></i><span>กำลังเชื่อมต่อ…</span></button>
+  <div class="name">จับคู่ก๊วนแบด</div><div id="rtitle"></div>
+  <div class="sync" id="sync"><i></i><span>กำลังเชื่อมต่อ…</span></div>
 </div></header>
 <main class="wrap" id="app"></main>
 <div class="cta" id="acts" hidden></div>
@@ -492,98 +453,44 @@ const S={players:{},session:null,days:{}};
 let view='home', sheet=null, pickSel=new Set(), draft=null, fin=null, nx=null, sw=null, pr=null, sumDay=dayKey(), sumRound='', roundDone=null;
 
 /* ---------- storage: cloud db is the record, this browser keeps a copy ---------- */
-let db=false; const queue={}, busy={};
+let db=null; const queue={}, busy={};
 const ls={get(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
-const SB={url:'https://srddkabtoeeqkhtzyybn.supabase.co/rest/v1',key:'sb_publishable_SuUBatDveFEWYKM34FkhqQ_D0Ty8r8O'};
-let hasCode=false,unlocked=!!ls.get('bd.ok'),code=ls.get('bd.code')||'',syncMode='wait';
-async function sb(path,opt){const r=await fetch(SB.url+path,Object.assign({headers:{apikey:SB.key,'Content-Type':'application/json'}},opt)),t=await r.text();let j=null;try{j=t?JSON.parse(t):null}catch(e){}
-  if(!r.ok){const e=new Error((j&&j.message)||('http '+r.status));e.status=r.status;e.pg=j&&j.code;throw e}return j}
-const rpc=(fn,body)=>sb('/rpc/'+fn,{method:'POST',body:JSON.stringify(body||{})});
-let actN=0;
-function setSync(mode){syncMode=mode;const el=$('#sync');el.className='sync '+mode;el.querySelector('span').textContent={cloud:'Server Online'+(actN?' · '+actN:''),offline:'ออฟไลน์ · เก็บในเครื่องก่อน',err:'บันทึกไม่สำเร็จ ลองใหม่',wait:'กำลังเชื่อมต่อ…'}[mode]}
-const jobs=[];let pumping=false;
-const touched={};
-function enqueue(key,fn,body){if(!db)return;if(key){const i=jobs.findIndex(j=>j.key===key&&!j.active);if(i>=0){jobs[i]={key,fn,body};pump();return}}jobs.push({key,fn,body});pump()}
-async function pump(){if(pumping)return;pumping=true;
-  while(jobs.length){const j=jobs[0];j.active=true;let ok=false;
-    for(let a=0;a<2&&!ok;a++){try{await rpc(j.fn,j.body);ok=true}
-      catch(e){if(e.pg==='28P01'){unlocked=false;ls.set('bd.ok',0);toast('รหัสก๊วนถูกเปลี่ยน ใส่รหัสใหม่เพื่อแก้ไขข้อมูลเก่า');break}
-        if(a===0)await new Promise(r=>setTimeout(r,600+Math.random()*600))}}
-    jobs.shift();setSync(ok?'cloud':'err')}
-  pumping=false}
-/* everyone: add a player, change a photo, run the round, add a finished match. club code only: overwrite or delete stored documents */
-function dbWrite(path,data,op){const i=path.indexOf('/'),tbl=path.slice(0,i),id=path.slice(i+1);touched[path]=performance.now();
-  if(tbl==='app')return enqueue(path,'bd_put_session',{p_data:data});
-  if(op==='addMatch')return enqueue(null,'bd_add_match',{p_day:id,p_match:data});
-  if(unlocked)return enqueue(path,'bd_put',{p_code:code,p_tbl:tbl,p_id:id,p_data:data});
-  if(op==='addPlayer')return enqueue(null,'bd_add_player',{p_id:id,p_data:data});
-  if(op==='photo')return enqueue(path+'#photo','bd_set_photo',{p_id:id,p_photo:data.photo||''})}
-function liveSend(c,k,side,val){touched['live/c'+c]=performance.now();enqueue('live/c'+c+'#'+side,'bd_put_live',{p_court:c,p_k:k,p_side:side,p_val:val})}
-/* ---------- live sync: every open device re-reads what changed every few seconds ---------- */
-const known={};let polling=false,pollFail=0;
-const canon=o=>JSON.stringify(o,(k,v)=>v&&typeof v==='object'&&!Array.isArray(v)?Object.keys(v).sort().reduce((a,x)=>{if(v[x]!==undefined)a[x]=v[x];return a},{}):v);
-function pendingFor(tbl,id){const p=tbl+'/'+id;return jobs.some(j=>(j.key&&(j.key===p||j.key.indexOf(p+'#')===0))||(tbl==='days'&&j.fn==='bd_add_match'&&j.body.p_day===id)||(tbl==='players'&&j.fn==='bd_add_player'&&j.body.p_id===id))}
-const holdSession=()=>!!sheet&&!['finish','player','code'].includes(sheet);
-async function poll(){if(polling||!db||shufBusy||document.visibilityState!=='visible')return;polling=true;const t0=performance.now();
-  try{const idx=await sb('/bd_docs?select=tbl,id,updated_at');
-    const skip=r=>pendingFor(r.tbl,r.id)||(touched[r.tbl+'/'+r.id]||0)>t0||(r.tbl==='app'&&holdSession());
-    const want=idx.filter(r=>known[r.tbl+'/'+r.id]!==r.updated_at&&!skip(r)).slice(0,25);
-    if(want.length){const f=want.map(r=>'and(tbl.eq.'+r.tbl+',id.eq."'+r.id+'")').join(',');
-      const rows=await sb('/bd_docs?select=tbl,id,data,updated_at&or='+encodeURIComponent('('+f+')'));applyRemote(rows.filter(r=>!skip(r)))}
-    pollFail=0;if(syncMode==='offline')setSync('cloud')
-  }catch(e){if(++pollFail>=3&&syncMode==='cloud')setSync('offline')}
-  polling=false}
-function applyRemote(rows){let ch=false,sch=false,lch=false;
-  rows.forEach(r=>{known[r.tbl+'/'+r.id]=r.updated_at;const d=r.data||{};
-    if(r.tbl==='players'){if(canon(S.players[r.id])!==canon(d)){S.players[r.id]=d;ch=true}}
-    else if(r.tbl==='days'){const nd={matches:Array.isArray(d.matches)?d.matches:[],gone:d.gone||[]},od=S.days[r.id]||{};
-      if(canon({matches:od.matches||[],gone:od.gone||[]})!==canon(nd)){S.days[r.id]=nd;ch=true}}
-    else if(r.tbl==='app'&&r.id==='session'){const ns=d.s||null,os=S.session;
-      if(ns&&os&&os.drawer&&ns.stage==='draw'&&ns.rid===os.rid&&ns.ids.includes(os.drawer)&&!ns.tickets.some(t=>t.by===os.drawer))ns.drawer=os.drawer;
-      if(canon(os)!==canon(ns)){S.session=ns;ch=sch=true}}
-    else if(r.tbl==='live'){if(canon(live[r.id])!==canon(d)){live[r.id]=d;lch=true}}});
-  if(!ch&&!lch)return;
-  if(ch){ls.set('bd.players',S.players);ls.set('bd.days',S.days);ls.set('bd.session',S.session)}
-  const s=S.session,inRound=['draw','setup','play'].includes(view);
-  if(sch){if(!s&&inRound){view='home';toast('round นี้ถูกปิดจากเครื่องอื่นแล้ว')}else if(s&&inRound&&view!==s.stage)view=s.stage}
-  if(sheet==='finish'){const c=s&&s.courts&&s.courts[fin.c];
-    if(!c||!c.teams||c.start!==fin.st){sheet=null;fin=null;toast('สนามนี้ถูกบันทึกหรือเปลี่ยนจากเครื่องอื่นแล้ว');render();return}
-    const l=liveFor(fin.c);if(l){['sa','sb'].forEach(k=>{const el=$('#sc_'+k),v=l[k]|0;if(el&&document.activeElement!==el&&fin[k]!==v){fin[k]=v;el.value=v}});refreshFin()}
-    liveStrip();return}
-  if(!sheet&&(ch||view==='play'))render();else if(lch)liveStrip()}
-/* presence: each open device says "still here" every 4 s; the server answers with how many did so in the last 10 s */
-let pingFail=0;
-function devId(){let id=ls.get('bd.dev');if(!id){id='d'+uid()+uid();ls.set('bd.dev',id)}return id}
-async function ping(){if(!db||document.visibilityState!=='visible')return;const id=devId();
-  try{actN=+(await rpc('bd_ping',{p_id:id}))||0;pingFail=0}catch(e){if(++pingFail>=3)actN=0}
-  if(syncMode==='cloud')setSync('cloud')}
-setInterval(ping,4000);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')ping()});
-setInterval(poll,2500);document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')poll()});
-function savePlayer(id,op){ls.set('bd.players',S.players);dbWrite('players/'+id,S.players[id],op)}
+function setSync(mode){const el=$('#sync');el.className='sync '+mode;el.querySelector('span').textContent={cloud:'บันทึกบนคลาวด์',local:'บันทึกในเครื่องนี้',err:'บันทึกไม่สำเร็จ ลองใหม่',wait:'กำลังเชื่อมต่อ…'}[mode]}
+function dbWrite(path,data){if(!db)return;queue[path]={data};if(!busy[path])flush(path)}
+async function flush(path){busy[path]=true;
+  while(queue[path]){const {data}=queue[path];delete queue[path];
+    for(let attempt=0;attempt<2;attempt++){
+      try{const ref=db.doc(path);if(data===null)await ref.delete();else await ref.set(data);setSync('cloud');break}
+      catch(e){if(e&&e.code==='unavailable'&&attempt===0){await new Promise(r=>setTimeout(r,600+Math.random()*600));continue}
+        setSync('err');if(e&&e.code==='quota_exceeded')toast('พื้นที่เก็บข้อมูลเต็ม ลบรูปหรือผู้เล่นที่ไม่ใช้ออก');break}
+    }}
+  busy[path]=false}
+function savePlayer(id){ls.set('bd.players',S.players);dbWrite('players/'+id,S.players[id])}
 function saveSession(){ls.set('bd.session',S.session);dbWrite('app/session',{s:S.session})}
 function saveDay(k){ls.set('bd.days',S.days);dbWrite('days/'+k,S.days[k])}
 function loadLocal(){S.players=ls.get('bd.players')||{};S.session=ls.get('bd.session');S.days=ls.get('bd.days')||{};
   const lp=ls.get('bd.lastPick');if(Array.isArray(lp))pickSel=new Set(lp)}
 async function connect(){
+  const c=window.claude;if(!c||!c.use){setSync('local');return}
+  let d=null;try{d=await c.use('db')}catch(e){}
+  if(!d){setSync('local');return}
   try{
-    const [rows,hc]=await Promise.all([sb('/bd_docs?select=tbl,id,data,updated_at'),rpc('bd_has_code')]);
-    db=true;hasCode=!!hc;
-    unlocked=!hasCode?true:(code?!!(await rpc('bd_check',{p_code:code})):false);ls.set('bd.ok',unlocked&&hasCode?1:0);
-    const remoteP={},remoteD={};let ss;
-    rows.forEach(r=>{known[r.tbl+'/'+r.id]=r.updated_at;if(r.tbl==='live'){live[r.id]=r.data||{};return}if(r.tbl==='players')remoteP[r.id]=r.data;else if(r.tbl==='days')remoteD[r.id]={matches:Array.isArray(r.data.matches)?r.data.matches:[],gone:r.data.gone||[]};else if(r.tbl==='app'&&r.id==='session')ss=r.data});
-    for(const id in S.players)if(!remoteP[id]&&!S.players[id].hidden){remoteP[id]=S.players[id];dbWrite('players/'+id,S.players[id],'addPlayer')}
-    for(const k in S.days){const loc=S.days[k].matches||[];if(!remoteD[k])remoteD[k]={matches:[],gone:[]};
+    const [ps,ds,ss]=await Promise.all([d.collection('players').limit(1000).get(),d.collection('days').limit(1000).get(),d.doc('app/session').get()]);
+    db=d;
+    const remoteP={};ps.docs.forEach(x=>{remoteP[x.id]=clone(x.data())});
+    for(const id in S.players)if(!remoteP[id]){remoteP[id]=S.players[id];dbWrite('players/'+id,S.players[id])}
+    S.players=remoteP;
+    const remoteD={};ds.docs.forEach(x=>{const v=clone(x.data());remoteD[x.id]={matches:Array.isArray(v.matches)?v.matches:[],gone:v.gone||[]}});
+    for(const k in S.days){const loc=S.days[k].matches||[];if(!remoteD[k]){remoteD[k]={matches:loc};if(loc.length)dbWrite('days/'+k,remoteD[k]);continue}
       const have=new Set(remoteD[k].matches.map(m=>m.id));const extra=loc.filter(m=>!have.has(m.id)&&!(remoteD[k].gone||[]).includes(m.id));
-      if(extra.length){remoteD[k].matches=remoteD[k].matches.concat(extra).sort((a,b)=>a.t-b.t);extra.forEach(m=>dbWrite('days/'+k,m,'addMatch'))}}
-    S.players=remoteP;S.days=remoteD;
-    if(ss!==undefined){S.session=ss.s||null}else if(S.session){dbWrite('app/session',{s:S.session})}
+      if(extra.length){remoteD[k].matches=remoteD[k].matches.concat(extra).sort((a,b)=>a.t-b.t);dbWrite('days/'+k,remoteD[k])}}
+    S.days=remoteD;
+    if(ss.exists){S.session=clone(ss.data()).s||null}else if(S.session){dbWrite('app/session',{s:S.session})}
     ls.set('bd.players',S.players);ls.set('bd.days',S.days);ls.set('bd.session',S.session);
-    setSync('cloud');ping();
+    setSync('cloud');
     if(!sheet){if(view==='home'||!S.session&&['draw','setup','play'].includes(view))view='home';render()}
-  }catch(e){db=false;setSync('offline')}
+  }catch(e){setSync('local')}
 }
-window.addEventListener('online',()=>{if(!db)connect()});
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&!sheet&&!db)connect()});
 
 /* ---------- helpers ---------- */
 const P=id=>S.players[id];
@@ -631,12 +538,11 @@ function vHome(){
   const hero='<section class="hero"><div class="label">'+esc(thaiDate(k))+'</div><div><div class="big num">'+n+'</div><div>match ที่จบแล้ววันนี้</div></div>'+(LAND&&s?'<div><b>'+status+'</b></div>':'')+'</section>';
   const go=s?'<button class="btn pri block" data-a="resume">กลับเข้า round นี้</button><button class="btn danger block" data-a="endRound" data-confirm="1">'+endLabel()+'</button>':'<button class="btn pri block" data-a="go" data-v="pick">เริ่มจับฉลาก</button>';
   const sumB='<button class="btn grow" data-a="openSummary">สรุปผลวันนี้</button>',plB='<button class="btn grow" data-a="go" data-v="players">ผู้เล่น ('+activePlayers().length+')</button>';
-  const rsB='<button class="btn sm mini" data-a="openReset">ตั้งค่า · รีเซ็ตข้อมูล</button>';
-  const lockB=db&&!hasCode?'<button class="btn sm danger" data-a="setCode">ยังไม่ได้ตั้งรหัสก๊วน · ตั้งเลย</button>':(db&&!unlocked?'<button class="btn sm mini" data-a="openCode">ใส่รหัสก๊วน</button>':'');
+  const rsB='<button class="btn sm mini" data-a="openReset">รีเซ็ตข้อมูล</button>';
   const bdB='<button class="btn block board" data-a="go" data-v="board">SCOREBOARD</button>';
-  if(LAND)return {title:'',main:hero,acts:go+'<div class="tabs">'+sumB+plB+'</div>'+bdB+(lockB?'<div class="tabs">'+lockB+rsB+'</div>':rsB)};
+  if(LAND)return {title:'',main:hero,acts:go+'<div class="tabs">'+sumB+plB+'</div>'+bdB+rsB};
   return {main:hero+(s?'<section class="panel stack"><div class="label">Round ที่เปิดอยู่</div><h2>'+status+'</h2>'+go+'</section>':go)+'<div class="row">'+sumB+plB+'</div>'+
-    bdB+'<div class="foot">'+lockB+rsB+'</div>'}}
+    bdB+'<div class="foot">'+rsB+'</div>'}}
 function pcell(p,extra,act){return '<button class="pcell '+(extra||'')+'" data-a="'+act+'" data-id="'+esc(p.id)+'">'+av(p.id)+'<span class="nm">'+esc(p.name)+'</span></button>'}
 const addCell='<button class="pcell add" data-a="editPlayer" data-id="">+ เพิ่มผู้เล่น</button>';
 const pgrid=cells=>LAND?'<div class="fit cells" data-fit="1.1">'+cells+'</div>':'<div class="pgrid">'+cells+'</div>';
@@ -852,26 +758,25 @@ function vReset(){const keys=Object.keys(S.days).filter(k=>S.days[k].matches.len
       r.ms.forEach(m=>items.push('<div class="scell"><span class="rowx muted"><span class="grow">R'+(m.rn||1)+' · สนาม '+m.court+' · '+mTime(m)+'</span>'+mB(m)+'</span><span>'+mLine(m)+'</span></div>'))});
     const cap=8,pages=Math.max(1,Math.ceil(items.length/cap));rPage=Math.max(0,Math.min(pages-1,rPage));
     return {title:'รีเซ็ตข้อมูล',main:sel+(items.length?'<div class="fit" data-fit="3">'+items.slice(rPage*cap,(rPage+1)*cap).join('')+'</div>':none),
-      acts:'<div class="tabs3">'+'<button class="btn sm" data-a="setCode">'+(hasCode?'เปลี่ยนรหัสก๊วน':'ตั้งรหัสก๊วน')+'</button><button class="btn sm" data-a="exportData">สำรองข้อมูล</button><label class="btn sm">นำเข้าข้อมูล<input type="file" accept="application/json,.json" data-change="import" id="impFile" style="position:absolute;opacity:0;width:1px;height:1px"></label>'+'</div>'+(pages>1?'<div class="pager"><button class="btn" data-a="rPg" data-d="-1"'+(rPage<=0?' disabled':'')+' aria-label="หน้าก่อน">‹</button><span class="num">'+(rPage+1)+'/'+pages+'</span><button class="btn" data-a="rPg" data-d="1"'+(rPage>=pages-1?' disabled':'')+' aria-label="หน้าถัดไป">›</button></div>':'')+allB}}
+      acts:'<div class="small muted">'+note+'</div>'+(pages>1?'<div class="pager"><button class="btn" data-a="rPg" data-d="-1"'+(rPage<=0?' disabled':'')+' aria-label="หน้าก่อน">‹</button><span class="num">'+(rPage+1)+'/'+pages+'</span><button class="btn" data-a="rPg" data-d="1"'+(rPage>=pages-1?' disabled':'')+' aria-label="หน้าถัดไป">›</button></div>':'')+allB}}
   return {main:'<h1>รีเซ็ตข้อมูล</h1><p class="small muted">'+note+'</p>'+sel+(rounds.length?rounds.map(r=>'<section class="panel stack"><div class="row"><h2 class="grow">Round '+r.no+' · '+r.ms.length+' match</h2>'+rB(r)+'</div>'+
       r.ms.map(m=>'<div class="mrow"><div class="grow"><div class="small muted">สนาม '+m.court+' · '+mTime(m)+' · '+clock(m.dur)+'</div><div>'+mLine(m)+'</div></div>'+mB(m)+'</div>').join('')+'</section>').join(''):none)+
-    '<section class="panel stack"><h2>รหัสก๊วนและข้อมูลสำรอง</h2><p class="small muted">'+(hasCode?'ตั้งรหัสก๊วนแล้ว การลบหรือแก้ไขข้อมูลเก่าและ profile ผู้เล่นต้องใช้รหัส':'ยังไม่ได้ตั้งรหัสก๊วน ตอนนี้ใครมีลิงก์ก็ลบและแก้ไขข้อมูลได้ทั้งหมด')+'</p><div class="row">'+'<button class="btn sm" data-a="setCode">'+(hasCode?'เปลี่ยนรหัสก๊วน':'ตั้งรหัสก๊วน')+'</button><button class="btn sm" data-a="exportData">สำรองข้อมูล</button><label class="btn sm">นำเข้าข้อมูล<input type="file" accept="application/json,.json" data-change="import" id="impFile" style="position:absolute;opacity:0;width:1px;height:1px"></label>'+'</div></section>'+
     '<section class="panel stack"><h2>ลบทั้งหมด</h2><p class="small muted">ลบผลการแข่งทุกวัน ทุก round และ round ที่เปิดค้างอยู่</p>'+allB+'</section>'}}
 
 /* ---------- sheets ---------- */
 function openSheet(n){sheet=n;renderSheet()}
 function closeSheet(){sheet=null;draft=null;fin=null;nx=null;sw=null;pr=null;render()}
 function renderSheet(){const v=$('#veil');if(!sheet){v.hidden=true;fitAll();return}
-  v.hidden=false;$('#sheet').innerHTML=({player:shPlayer,finish:shFinish,next:shNext,swap:shSwap,pair:shPair,code:shCode}[sheet])();fitAll();if(sheet==='finish'&&fin)refreshFin()}
+  v.hidden=false;$('#sheet').innerHTML=({player:shPlayer,finish:shFinish,next:shNext,swap:shSwap,pair:shPair}[sheet])();fitAll();if(sheet==='finish'&&fin)refreshFin()}
 function sh(title,content,actions){const x='<button class="btn sm" data-a="closeSheet">ปิด</button>';
   if(LAND)return '<div class="sgrid"><div class="sbody">'+content+'</div><div class="sacts"><h2>'+title+'</h2>'+actions+x+'</div></div>';
   return '<div class="shead"><h2>'+title+'</h2>'+x+'</div>'+content+actions}
 function shPlayer(){const d=draft,slot=(k,l)=>'<label class="slot">'+(d[k]?'<img class="av lg" src="'+esc(d[k])+'" alt="">':'<span class="av lg" style="background:var(--line);color:var(--muted)">+</span>')+'<span>'+l+'</span><input type="file" accept="image/*" data-change="photo" data-k="'+k+'" id="ph_'+k+'"></label>';
   return sh(d.isNew?'เพิ่มผู้เล่น':'แก้ไขผู้เล่น',
-    '<div class="field"><label class="label" for="pName">ชื่อ</label><input type="text" id="pName" maxlength="24" value="'+esc(d.name)+'" data-input="pName" autocomplete="off"'+(unlocked||d.isNew?'':' readonly')+'></div>'+
+    '<div class="field"><label class="label" for="pName">ชื่อ</label><input type="text" id="pName" maxlength="24" value="'+esc(d.name)+'" data-input="pName" autocomplete="off"></div>'+
     '<div class="stack"><div class="label">รูป profile (ไม่ใส่ก็ได้)</div><div class="slots one">'+slot('photo',d.photo?'แตะเพื่อเปลี่ยนรูป':'แตะเพื่อเลือกรูป')+'</div></div>',
     '<button class="btn pri block" data-a="savePlayer">บันทึก</button>'+
-    (d.isNew?'':(unlocked?'<button class="btn danger block" data-a="delPlayer" data-confirm="1">ลบผู้เล่นคนนี้</button>':'<p class="small muted">เปลี่ยนรูปได้เลย ส่วนการแก้ชื่อหรือลบผู้เล่นต้องใช้รหัสก๊วน</p>')))}
+    (d.isNew?'':'<button class="btn danger block" data-a="delPlayer" data-confirm="1">ลบผู้เล่นคนนี้</button>'))}
 function shFinish(){const c=ses().courts[fin.c],[a,b]=c.teams.map(team);
   const box=(t,k)=>'<div class="sbox" id="box_'+k+'">'+duo(t.m,'photo','')+'<span class="nm">'+esc(names(t.m))+'</span>'+
     '<input type="number" inputmode="numeric" pattern="[0-9]*" min="0" max="99" id="sc_'+k+'" value="'+fin[k]+'" data-input="score" data-k="'+k+'" aria-label="คะแนน '+esc(names(t.m))+'">'+
@@ -929,30 +834,6 @@ function shPair(){const s=ses(),q=idleTeams().filter(t=>!pr.slots.includes(t.id)
   const btns='<button class="btn pri block" data-a="startPair"'+(pr.cs.length?'':' disabled')+'>ลงสนาม · เริ่มจับเวลา</button><button class="btn block" data-a="endRound" data-confirm="1">'+endLabel()+'</button>';
   if(LAND)return sh('จัดคู่ match ถัดไป',swp?'<div class="ncols pp"><div>'+swp+hint+'</div><div>'+body+'</div></div>':hint+body,btns);
   return sh('จัดคู่ match ถัดไป',swp+hint+body,btns)}
-let codeMode='enter',codeErr='',codeAlt=false;
-const lockLeft=()=>Math.max(0,Math.ceil(((+ls.get('bd.lock')||0)-Date.now())/1000));
-const mmss=n=>Math.floor(n/60)+':'+String(n%60).padStart(2,'0');
-setInterval(()=>{const el=$('#lockT');if(!el)return;const n=lockLeft();if(n>0)el.textContent=mmss(n);else{codeErr='';renderSheet();focusCode()}},1000);
-function focusCode(){const i=$('#codeIn');if(i){try{i.focus()}catch(e){}}}
-function otpPaint(){const i=$('#codeIn'),w=$('#otp');if(!i||!w)return;const v=i.value;w.querySelectorAll('.bx').forEach((b,k)=>{b.textContent=v[k]||'';b.classList.toggle('fill',k<v.length);b.classList.toggle('on',k===Math.min(v.length,3)&&document.activeElement===i)})}
-function shCode(){const set=codeMode==='set',otp=!codeAlt,lk=set?0:lockLeft(),dis=lk?' disabled':'';
-  const intro='<p class="small muted otp-intro">'+(set?'รหัสนี้ใช้ปลดล็อกการแก้ไขและลบข้อมูลเก่าในแต่ละเครื่อง บอกเฉพาะคนที่ดูแลข้อมูล':'แก้ไขหรือลบข้อมูลจำเป็นต้องกรอกรหัสก่อน (ใส่แค่ครั้งเดียว)')+'</p>';
-  const field=otp?'<div class="otp-wrap"><div class="otp-label">'+(set?'ตั้งรหัสใหม่ 4 หลัก':'ระบุรหัสก๊วน')+'</div>'+
-      '<div class="otp'+(lk?' locked':codeErr?' err':'')+'" id="otp"><span class="bx"></span><span class="bx"></span><span class="bx"></span><span class="bx"></span>'+
-      '<input id="codeIn" data-otp="1" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="off" aria-label="'+(set?'รหัสใหม่ 4 หลัก':'รหัสก๊วน 4 หลัก')+'"'+dis+'></div>'+
-      '<div class="otp-msg'+(codeErr||lk?' bad':'')+'">'+(lk?'กรอกผิดครบ 5 ครั้ง · ลองใหม่ได้ใน <b class="num" id="lockT">'+mmss(lk)+'</b>':codeErr?esc(codeErr):(set?'ใช้ตัวเลข 4 ตัว':'กรอกครบ 4 หลักแล้วระบบตรวจให้ทันที'))+'</div></div>'
-    :'<div class="field"><label class="label" for="codeIn">'+(set?'รหัสใหม่':'รหัสก๊วน')+'</label><input type="text" id="codeIn" maxlength="40" autocomplete="off" autocapitalize="off" spellcheck="false"'+dis+'></div>'+(lk?'<div class="otp-msg bad">กรอกผิดครบ 5 ครั้ง · ลองใหม่ได้ใน <b class="num" id="lockT">'+mmss(lk)+'</b></div>':codeErr?'<div class="small" style="color:var(--lose)">'+esc(codeErr)+'</div>':'');
-  const alt='<button class="lnk" data-a="codeText">'+(otp?(set?'อยากตั้งรหัสเป็นข้อความ (ตัวอักษรปนตัวเลข)? พิมพ์แบบข้อความ':'รหัสไม่ใช่ตัวเลข 4 หลัก? พิมพ์รหัสแบบข้อความ'):'กลับไปกรอกแบบ 4 หลัก')+'</button>';
-  return sh(set?(hasCode?'เปลี่ยนรหัสก๊วน':'ตั้งรหัสก๊วน'):'ใส่รหัสก๊วน',intro+field+alt,
-    (set||!otp)?'<button class="btn pri block" data-a="submitCode"'+dis+'>'+(set?'บันทึกรหัส':'ปลดล็อก')+'</button>':'')}
-document.addEventListener('input',e=>{const t=e.target;if(t.id!=='codeIn'||!t.dataset.otp)return;t.value=t.value.replace(/\D/g,'').slice(0,4);const w=$('#otp');if(w)w.classList.remove('err');otpPaint();
-  if(t.value.length===4&&codeMode==='enter')A.submitCode()});
-document.addEventListener('focusin',e=>{if(e.target.id==='codeIn')otpPaint()});document.addEventListener('focusout',e=>{if(e.target.id==='codeIn')otpPaint()});
-function importData(obj){if(!obj||typeof obj!=='object'||(!obj.players&&!obj.days))throw new Error('bad');let np=0,nm=0;
-  for(const id in obj.players||{}){const p=obj.players[id];if(!p||!p.name)continue;S.players[id]=Object.assign({},p,{id});savePlayer(id);np++}
-  for(const k in obj.days||{}){if(!/^\d{4}-\d{2}-\d{2}$/.test(k))continue;const cur=S.days[k]||(S.days[k]={matches:[],gone:[]}),have=new Set(cur.matches.map(m=>m.id));
-    (obj.days[k].matches||[]).forEach(m=>{if(m&&m.id&&!have.has(m.id)&&!(cur.gone||[]).includes(m.id)){cur.matches.push(m);nm++}});cur.matches.sort((a,b)=>a.t-b.t);saveDay(k)}
-  toast('นำเข้าแล้ว: ผู้เล่น '+np+' คน · match ใหม่ '+nm+' รายการ');render()}
 function shSwap(){return sh('สลับตัว','<div class="row">'+av(sw,'photo','')+'<span class="grow"><b>'+esc(pname(sw))+'</b> เข้าแทนใคร <span class="muted small">(แตะชื่อ 2 ครั้ง)</span></span></div>'+swapChips(sw)+(LAND?'':'<p class="small muted">สลับได้ทุกคน รวมถึงคนที่กำลังแข่งอยู่ในสนาม</p>'),'')}
 const hot=t=>(t.streak||0)>=2;
 function presel(m){const idle=idleTeams(),hots=idle.filter(hot),pool=idle.filter(t=>!hot(t));if(nx)nx.out=null;
@@ -1024,8 +905,8 @@ const A={
   closeSheet,
   editPlayer(d){const p=P(d.id);draft=p?{id:p.id,name:p.name,photo:p.photo||'',win:p.win||'',lose:p.lose||''}:{id:'p'+uid(),name:'',photo:'',win:'',lose:'',isNew:true};openSheet('player')},
   savePlayer(){const n=draft.name.trim();if(!n){toast('ใส่ชื่อก่อนบันทึก');return}
-    const old=P(draft.id)||{order:Date.now()};S.players[draft.id]=Object.assign({},old,{id:draft.id,name:(unlocked||draft.isNew)?n:(old.name||n),photo:draft.photo,win:'',lose:'',hidden:false});
-    savePlayer(draft.id,draft.isNew?'addPlayer':'photo');if(draft.isNew&&view==='pick')pickSel.add(draft.id);toast('บันทึกแล้ว');closeSheet()},
+    const old=P(draft.id)||{order:Date.now()};S.players[draft.id]=Object.assign({},old,{id:draft.id,name:n,photo:draft.photo,win:'',lose:'',hidden:false});
+    savePlayer(draft.id);if(draft.isNew&&view==='pick')pickSel.add(draft.id);toast('บันทึกแล้ว');closeSheet()},
   delPlayer(){const s=ses();if(s&&s.ids.includes(draft.id)){toast('คนนี้อยู่ใน round ที่เปิดอยู่ จบ round ก่อนแล้วค่อยลบ');return}
     S.players[draft.id].hidden=true;savePlayer(draft.id);pickSel.delete(draft.id);toast('ลบแล้ว');closeSheet()},
   togglePick(d){pickSel.has(d.id)?pickSel.delete(d.id):pickSel.add(d.id);ls.set('bd.lastPick',[...pickSel]);render()},
@@ -1078,7 +959,7 @@ const A={
   set21(d){fin[d.k]=21;$('#sc_'+d.k).value=21;refreshFin();pushLive(d.k)},
   saveFinish(){if(fin.sa===fin.sb)return;const s=ses(),c=s.courts[fin.c],[ta,tb]=c.teams.map(team),now=Date.now();
     ensureRound(s);const m={id:'m'+uid(),r:s.rid,rn:s.no,t:now,court:fin.c+1,a:[...ta.m],b:[...tb.m],sa:fin.sa,sb:fin.sb,w:fin.sa>fin.sb?'a':'b',dur:now-c.start};
-    const k=dayKey();(S.days[k]||(S.days[k]={matches:[]})).matches.push(m);ls.set('bd.days',S.days);dbWrite('days/'+k,m,'addMatch');
+    const k=dayKey();(S.days[k]||(S.days[k]={matches:[]})).matches.push(m);saveDay(k);
     if(s.manual){s.teams=s.teams.filter(t=>t!==ta&&t!==tb);c.teams=null;c.start=null;c.draft={a:[],b:[]};fin=null;sheet=null;saveSession();toast('บันทึกผลสนาม '+m.court+' แล้ว · ผู้เล่นกลับมาว่าง');render();return}
     ta.last=tb.last=now;c.teams=null;c.start=null;const wT=m.w==='a'?ta:tb,lT=m.w==='a'?tb:ta;wT.streak=(wT.streak||0)+1;lT.streak=0;
     if(s.courts.length>1){c.res={w:wT.id,l:lT.id,sa:m.sa,sb:m.sb};fin=null;saveSession();
@@ -1110,20 +991,6 @@ const A={
   openProfile(d){if(view!=='profile')profBack=view;profId=d.id;view='profile';render();scrollTo(0,0)},
   back(){view=profBack||'home';render();scrollTo(0,0)},
   bPg(d){bPage+=+d.d;render()},
-  openCode(){codeMode='enter';codeErr='';codeAlt=false;openSheet('code');focusCode()},
-  setCode(){codeMode='set';codeErr='';codeAlt=false;openSheet('code');focusCode()},
-  codeText(){codeAlt=!codeAlt;codeErr='';renderSheet();focusCode()},
-  syncTap(){if(syncMode==='offline'||syncMode==='err'){setSync('wait');connect()}},
-  async submitCode(){const v=($('#codeIn').value||'').trim();if(!db){codeErr='ตอนนี้ออฟไลน์อยู่ ต่ออินเทอร์เน็ตแล้วลองใหม่';renderSheet();focusCode();return}
-    try{if(codeMode==='set'){if(codeAlt?v.length<4:!/^\d{4}$/.test(v)){codeErr=codeAlt?'ตั้งรหัสอย่างน้อย 4 ตัว':'รหัสต้องเป็นตัวเลข 4 หลัก';renderSheet();focusCode();return}
-        await rpc('bd_set_code',{p_old:code,p_new:v});code=v;hasCode=true;unlocked=true;ls.set('bd.code',v);ls.set('bd.ok',1);setSync('cloud');toast('ตั้งรหัสก๊วนแล้ว');closeSheet()}
-      else{if(lockLeft()>0){renderSheet();return}if(!v)return;const r=await rpc('bd_check2',{p_code:v,p_dev:devId()});
-        if(!r||!r.ok){if(r&&r.wait>0){ls.set('bd.lock',Date.now()+r.wait*1000);codeErr=''}else codeErr='รหัสไม่ถูกต้อง'+(r&&r.left>0?' · เหลืออีก '+r.left+' ครั้ง':'');renderSheet();focusCode();return}
-        ls.set('bd.lock',0);
-        code=v;unlocked=true;ls.set('bd.code',v);ls.set('bd.ok',1);setSync('cloud');toast('ปลดล็อกแล้ว เครื่องนี้แก้ไขและลบข้อมูลได้');closeSheet();if(pendingA==='openReset')A.openReset();pendingA=''}}
-    catch(e){codeErr=e.pg==='28P01'?'รหัสเดิมในเครื่องนี้ไม่ถูกต้อง ปิดแล้วใส่รหัสก๊วนก่อน':'ทำรายการไม่สำเร็จ ลองใหม่';renderSheet();focusCode()}},
-  exportData(){const blob=new Blob([JSON.stringify({app:'sundaybadminton',exported:new Date().toISOString(),players:S.players,days:S.days})],{type:'application/json'}),a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);a.download='sundaybadminton-backup-'+dayKey()+'.json';document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast('บันทึกไฟล์สำรองแล้ว')},
   openReset(){rDay='';rPage=0;view='reset';render();scrollTo(0,0)},
   rPg(d){rPage+=+d.d;render()},
   delRound(d){const day=S.days[d.day];if(!day)return;const out=day.matches.filter(m=>rkey(m)===d.r);if(!out.length)return;
@@ -1132,11 +999,9 @@ const A={
     if(S.session){S.session=null;saveSession()}toast('ลบข้อมูลการแข่งทั้งหมดแล้ว');render()}
 };
 const armed=new WeakMap();
-const ADMIN=new Set(['delMatch','delRound','wipeAll','delPlayer','setCode','openReset']);let pendingA='';
 document.addEventListener('click',e=>{
   if(e.target.id==='veil'){closeSheet();return}
   const el=e.target.closest('[data-a]');if(!el||el.disabled)return;
-  if(!unlocked&&ADMIN.has(el.dataset.a)){pendingA=el.dataset.a;e.preventDefault();codeMode='enter';codeErr='';codeAlt=false;openSheet('code');focusCode();return}
   if(el.dataset.confirm&&!armed.has(el)){armed.set(el,el.innerHTML);const c=el.dataset.confirm;el.textContent=c==='1'?'แตะอีกครั้งเพื่อยืนยัน':c;el.classList.add('armed');
     setTimeout(()=>{if(armed.has(el)){el.innerHTML=armed.get(el);armed.delete(el);el.classList.remove('armed')}},3000);return}
   armed.delete(el);
@@ -1148,8 +1013,6 @@ document.addEventListener('change',async e=>{const t=e.target,k=t.dataset.change
   if(k==='sumDay'){sumDay=t.value;sumRound='';render()}
   if(k==='sumRound'){sumRound=t.value;render()}
   if(k==='rDay'){rDay=t.value;rPage=0;render()}
-  if(k==='import'&&t.files&&t.files[0]){if(!unlocked){codeMode='enter';codeErr='';codeAlt=false;openSheet('code');focusCode();return}
-    try{importData(JSON.parse(await t.files[0].text()))}catch(err){toast('ไฟล์นี้อ่านไม่ได้ ต้องเป็นไฟล์สำรองของแอปนี้')}t.value=''}
   if(k==='photo'&&draft&&t.files&&t.files[0]){try{draft[t.dataset.k]=await shrink(t.files[0]);renderSheet()}catch(err){toast('เปิดรูปนี้ไม่ได้ ลองรูปอื่น')}}});
 document.addEventListener('focusin',e=>{if(e.target.dataset&&e.target.dataset.input==='score')e.target.select()});
 setInterval(()=>{document.querySelectorAll('[data-start]').forEach(el=>{el.textContent=clock(Date.now()-(+el.dataset.start))})},1000);
@@ -1166,9 +1029,3 @@ window.addEventListener('resize',relayout);
 loadLocal();setSync('wait');render();connect();
 })();
 </script>
-<script>
-/* pick up a newer deploy even when the phone has an older copy cached */
-(function(){var B='1791563334';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
-</script>
-</body>
-</html>
