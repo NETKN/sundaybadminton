@@ -150,8 +150,8 @@ h1{font-size:28px;font-weight:700} h2{font-size:20px;font-weight:600} h3{font-si
 .mside .mp{background:none;border:0;color:inherit;display:flex;flex-direction:column;align-items:center;gap:2px;padding:0;cursor:pointer;font:inherit;min-width:0;max-width:100%}
 .mside .mp .nm{font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mslot{font-family:var(--f-display);font-weight:700;font-size:13px;opacity:.7;padding:4px 8px}
-.mvs{align-self:center;border:0;cursor:pointer;font-family:var(--f-display)}
-.mvs.armed{width:auto;padding:0 12px;border-radius:999px;font-size:13px}
+.mvs{align-self:center;border:0;cursor:pointer;font-family:var(--f-display);transition:width .18s ease,height .18s ease,border-radius .18s ease,padding .18s ease}
+.court .mvs.armed,.courts .court .mvs.armed{width:auto;min-width:84px;height:48px;padding:0 18px;border-radius:12px;font-size:18px;font-weight:700;box-shadow:0 0 0 4px rgba(242,183,5,.35)}
 .mvs-gap{width:40px}
 .mpool-wrap{display:flex;flex-direction:column;gap:6px;min-width:0}
 .mpool{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 4px;-webkit-overflow-scrolling:touch}
@@ -654,7 +654,7 @@ function vPick(){const ps=activePlayers();[...pickSel].forEach(id=>{if(!P(id)||P
     pgrid(ps.map(p=>pcell(p,pickSel.has(p.id)?'on':'','togglePick')).join('')+addCell),acts:cta}}
 let justDrawn=-1;
 function benchRow(id,txt,act){const tag=act?'button':'div';return '<'+tag+' class="team wait"'+(act?' data-a="openSwap" data-id="'+esc(id)+'"':'')+'><span class="tn">WAIT</span>'+av(id,'photo','sm')+'<span class="nm">'+esc(pname(id))+(txt||'')+'</span></'+tag+'>'}
-const manSw=s=>'<button class="sw man'+(s.manual?'':' off')+'" role="switch" aria-checked="'+!!s.manual+'" aria-label="วิธีจัดแข่ง: '+(s.manual?'MANUAL':'RANDOM')+'" data-a="toggleManual"><span class="t d">MANUAL</span><span class="t s">RANDOM</span><i></i></button>';
+const manSw=s=>'<button class="sw man'+(s.manual?' off':'')+'" role="switch" aria-checked="'+!s.manual+'" aria-label="วิธีจัดแข่ง: '+(s.manual?'MANUAL':'RANDOM')+'" data-a="toggleManual"><span class="t d">RANDOM</span><span class="t s">MANUAL</span><i></i></button>';
 function vDrawManual(s,rn){const sw=manSw(s),go='<button class="btn pri block" data-a="startManual" data-confirm="แตะอีกครั้งเพื่อเริ่มการแข่งขัน">เริ่มการแข่งขัน</button>';
   const who=s.ids.map(id=>'<div class="pcell">'+av(id)+'<span class="nm">'+esc(pname(id))+'</span></div>').join('');
   const note='<p class="small muted">โหมดจัดเอง: ไม่ต้องจับฉลาก กดเริ่มการแข่งขัน แล้วเลือกเองว่าใครลงสนามไหน ฝั่งไหน ฝั่งละ 1 คนเป็นแข่งเดี่ยว ฝั่งละ 2 คนเป็นแข่งคู่</p>';
@@ -1061,7 +1061,7 @@ const A={
   startPlay(){const s=ses(),now=Date.now();s.courts=[];for(let i=0;i<s.nCourts;i++)s.courts.push({teams:[s.teams[2*i].id,s.teams[2*i+1].id],start:now});
     s.stage='play';saveSession();view='play';render();scrollTo(0,0)},
   addCourt(){const s=ses();if(s.courts.length<3){s.courts.push(s.manual?{teams:null,start:null,draft:{a:[],b:[]}}:{teams:null,start:null});saveSession();render()}},
-  toggleManual(){const s=ses();if(!s||s.stage!=='draw')return;s.manual=!s.manual;saveSession();const el=$('.sw.man');if(el){el.classList.toggle('off',!s.manual);setTimeout(render,230)}else render()},
+  toggleManual(){const s=ses();if(!s||s.stage!=='draw')return;s.manual=!s.manual;saveSession();const el=$('.sw.man');if(el){el.classList.toggle('off',!!s.manual);setTimeout(render,230)}else render()},
   startManual(){const s=ses();if(!s||!s.manual)return;if(s.ids.length<2){toast('ต้องมีผู้เล่นอย่างน้อย 2 คน');return}ensureRound(s);
     s.stage='play';s.teams=[];s.bench=[];s.courts=[{teams:null,start:null,draft:{a:[],b:[]}}];msel=null;saveSession();view='play';render();scrollTo(0,0)},
   mSel(d){msel=msel===d.id?null:d.id;render()},
@@ -1168,7 +1168,7 @@ loadLocal();setSync('wait');render();connect();
 </script>
 <script>
 /* pick up a newer deploy even when the phone has an older copy cached */
-(function(){var B='1791563334';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
+(function(){var B='1791564454';fetch('index.html?_='+Date.now(),{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){var m=t.match(/var B='([0-9]+)'/);if(m&&+m[1]>+B&&sessionStorage.getItem('bd.upd')!==m[1]){sessionStorage.setItem('bd.upd',m[1]);location.replace(location.pathname+'?v='+m[1])}}).catch(function(){})})();
 </script>
 </body>
 </html>
